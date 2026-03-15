@@ -1,0 +1,560 @@
+/* src/App.css — Premium Saju Fortune v3 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-dim: rgba(201, 168, 76, 0.18);
+  --bg: #07070d;
+  --border: rgba(201, 168, 76, 0.15);
+  --border-strong: rgba(201, 168, 76, 0.38);
+  --text-primary: #f0ece0;
+  --text-dim: #7a7060;
+  --text-muted: #4a4538;
+  --radius-card: 28px;
+  --radius-btn: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'Noto Serif KR', serif;
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Stars background ─── */
+.starfield {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+          radial-gradient(ellipse at 15% 25%, rgba(99,102,241,0.08) 0%, transparent 55%),
+          radial-gradient(ellipse at 85% 70%, rgba(201,168,76,0.05) 0%, transparent 50%),
+          #07070d;
+}
+.starfield::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+          radial-gradient(1px 1px at 12% 8%, rgba(255,255,255,0.55) 0%, transparent 100%),
+          radial-gradient(1px 1px at 37% 22%, rgba(255,255,255,0.35) 0%, transparent 100%),
+          radial-gradient(1.5px 1.5px at 65% 5%, rgba(255,255,255,0.5) 0%, transparent 100%),
+          radial-gradient(1px 1px at 82% 15%, rgba(255,255,255,0.3) 0%, transparent 100%),
+          radial-gradient(1px 1px at 7% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
+          radial-gradient(1.5px 1.5px at 93% 40%, rgba(255,255,255,0.45) 0%, transparent 100%),
+          radial-gradient(1px 1px at 50% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+          radial-gradient(1px 1px at 25% 75%, rgba(255,255,255,0.35) 0%, transparent 100%),
+          radial-gradient(1.5px 1.5px at 70% 80%, rgba(255,255,255,0.45) 0%, transparent 100%),
+          radial-gradient(1px 1px at 45% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+          radial-gradient(1px 1px at 18% 92%, rgba(255,255,255,0.4) 0%, transparent 100%),
+          radial-gradient(1px 1px at 88% 95%, rgba(255,255,255,0.35) 0%, transparent 100%);
+}
+
+/* ─── Layout ─── */
+.container {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 60px 20px 40px;
+  gap: 24px;
+}
+
+/* ─── Capture area ─── */
+.capture-area {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 24px; width: 100%;
+}
+
+/* ─── Character ─── */
+.character-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; position: relative;
+}
+.character-ring {
+  position: absolute;
+  width: 124px; height: 124px;
+  top: -14px; left: 50%; transform: translateX(-50%);
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  animation: spin-ring 24s linear infinite;
+  pointer-events: none;
+}
+.character-ring::before {
+  content: '✦';
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  color: var(--gold); font-size: 10px;
+}
+@keyframes spin-ring { to { transform: translateX(-50%) rotate(360deg); } }
+
+.character-img {
+  width: 96px; height: 96px; border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 0 40px rgba(201,168,76,0.15), 0 0 0 4px rgba(201,168,76,0.05);
+  animation: float 5s ease-in-out infinite;
+  object-fit: cover;
+  position: relative; z-index: 1;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+.character-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem; letter-spacing: 0.38em;
+  color: var(--gold); text-transform: uppercase; opacity: 0.7;
+  position: relative; z-index: 1;
+}
+
+/* ─── Card — NO backdrop-filter (causes stacking context bugs) ─── */
+.dialog-box {
+  width: 100%; max-width: 440px;
+  /* 반투명 대신 실제 불투명 배경으로 교체 */
+  background: #0e0d14;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 40px 32px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: border-color 0.5s, box-shadow 0.5s;
+  /* 중요: isolation으로 내부 stacking context 명확히 분리 */
+  isolation: isolate;
+}
+
+/* ─── 등급별 카드 테마 ─── */
+.dialog-box.grade-daegil {
+  border-color: rgba(251,191,36,0.6);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 60px rgba(251,191,36,0.12), 0 0 120px rgba(251,191,36,0.06);
+}
+.dialog-box.grade-gil {
+  border-color: rgba(245,158,11,0.45);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 40px rgba(245,158,11,0.08);
+}
+.dialog-box.grade-jungil { border-color: rgba(217,119,6,0.35); }
+.dialog-box.grade-sogil  { border-color: rgba(180,130,60,0.25); }
+.dialog-box.grade-pyeong { border-color: rgba(100,116,139,0.3); }
+.dialog-box.grade-soheung {
+  border-color: rgba(185,28,28,0.38);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 30px rgba(185,28,28,0.08);
+}
+.dialog-box.grade-heung {
+  border-color: rgba(153,27,27,0.55);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 50px rgba(153,27,27,0.12);
+  animation: heung-pulse 4s ease-in-out infinite;
+}
+@keyframes heung-pulse {
+  0%, 100% { box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 50px rgba(153,27,27,0.1); }
+  50%       { box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 70px rgba(153,27,27,0.2); }
+}
+
+/* ─── Card ornament ─── */
+.card-ornament {
+  text-align: center; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+}
+.card-ornament::before { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--border-strong)); }
+.card-ornament::after  { content: ''; flex: 1; height: 1px; background: linear-gradient(to left,  transparent, var(--border-strong)); }
+.ornament-icon { color: var(--gold); font-size: 1rem; }
+
+.grade-daegil .ornament-icon {
+  color: #fbbf24;
+  text-shadow: 0 0 12px #fbbf24, 0 0 24px #fbbf24aa;
+  animation: gold-shimmer 2s ease-in-out infinite alternate;
+}
+@keyframes gold-shimmer {
+  from { text-shadow: 0 0 8px #fbbf24, 0 0 20px #fbbf2488; }
+  to   { text-shadow: 0 0 18px #fbbf24, 0 0 44px #fbbf24cc, 0 0 70px #fbbf2444; }
+}
+
+/* ─── Intro ─── */
+.main-text {
+  font-size: 0.92rem; line-height: 1.95;
+  color: #b0a890; text-align: center;
+  margin-bottom: 28px; font-weight: 300;
+}
+
+/* ─── Menu ─── */
+.menu-list { display: flex; flex-direction: column; gap: 10px; }
+
+.btn-menu {
+  width: 100%; background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border); border-radius: var(--radius-btn);
+  padding: 18px 20px; color: var(--text-primary);
+  font-family: 'Noto Serif KR', serif; font-size: 0.9rem;
+  text-align: left; cursor: pointer;
+  display: flex; align-items: center; gap: 14px;
+  transition: background 0.25s, border-color 0.25s, transform 0.2s;
+}
+.btn-menu:hover {
+  background: var(--gold-dim); border-color: var(--border-strong);
+  transform: translateX(6px);
+}
+.menu-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.7rem; letter-spacing: 0.15em;
+  color: var(--gold); min-width: 22px;
+}
+.menu-arrow {
+  margin-left: auto; color: var(--text-muted);
+  font-size: 0.9rem; transition: transform 0.2s, color 0.2s;
+}
+.btn-menu:hover .menu-arrow { transform: translateX(4px); color: var(--gold); }
+
+/* ─── Input form ─── */
+.input-form { display: flex; flex-direction: column; gap: 14px; }
+
+.form-label {
+  font-size: 0.68rem; letter-spacing: 0.22em;
+  color: var(--gold); margin-bottom: 6px; display: block;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.saju-input {
+  width: 100%; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 18px; color: var(--text-primary);
+  font-family: 'Noto Serif KR', serif; font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none; -webkit-appearance: none;
+}
+.saju-input::placeholder { color: var(--text-muted); }
+.saju-input:focus {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+}
+
+.date-row   { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+.gender-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.gender-btn {
+  padding: 12px; background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: 12px;
+  color: var(--text-primary); font-family: 'Noto Serif KR', serif;
+  cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+}
+.gender-btn.active {
+  background: var(--gold-dim); border-color: var(--border-strong); color: var(--gold-light);
+}
+
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, #b8974a, #c9a84c, #d4b86a);
+  border: none; border-radius: 14px; padding: 16px;
+  color: #1a1208; font-family: 'Noto Serif KR', serif;
+  font-weight: 700; font-size: 0.95rem; cursor: pointer;
+  margin-top: 6px; letter-spacing: 0.05em;
+  transition: filter 0.2s, transform 0.15s;
+}
+.btn-submit:hover  { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+
+.btn-back {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px; color: var(--text-dim);
+  font-family: 'Noto Serif KR', serif; cursor: pointer;
+  font-size: 0.85rem; width: 100%;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-back:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+/* ─── Result ─── */
+.result-container { position: relative; z-index: 0; }
+
+.result-eyebrow {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem; letter-spacing: 0.38em;
+  color: var(--gold); text-align: center; display: block; margin-bottom: 8px;
+}
+.result-title {
+  font-size: 1.1rem; text-align: center;
+  font-weight: 600; margin-bottom: 6px; color: var(--text-primary); line-height: 1.4;
+}
+.stars-row {
+  text-align: center; color: var(--gold);
+  font-size: 0.6rem; letter-spacing: 10px; margin-bottom: 28px;
+}
+
+/* ─── 사주 pillars ─── */
+.wonguk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 28px; }
+.wonguk-column {
+  background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 6px; text-align: center;
+}
+.wonguk-label { font-family: 'Cormorant Garamond', serif; font-size: 0.65rem; letter-spacing: 0.15em; color: var(--text-dim); margin-bottom: 8px; }
+.wonguk-char  { font-size: 1.7rem; font-weight: 700; line-height: 1.2; text-shadow: 0 0 20px currentColor; }
+.wonguk-sipsin { font-size: 0.6rem; color: var(--text-dim); margin-top: 6px; }
+.pillar-day   { border-color: var(--border-strong); background: var(--gold-dim); }
+
+/* ─── Element bars ─── */
+.section-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem; letter-spacing: 0.28em;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 16px; display: block;
+}
+.element-chart { margin-bottom: 28px; }
+.element-row   { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.el-name  { width: 20px; text-align: center; font-size: 1rem; font-weight: 700; text-shadow: 0 0 8px currentColor; flex-shrink: 0; }
+.el-count { width: 16px; text-align: right; font-size: 0.7rem; color: var(--text-dim); flex-shrink: 0; }
+.el-bar-bg { flex: 1; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.el-bar-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ─── Info table ─── */
+.fortune-table { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 24px; }
+.fortune-table .tr { display: flex; align-items: flex-start; padding: 14px 18px; border-bottom: 1px solid var(--border); gap: 16px; }
+.fortune-table .tr:last-child { border-bottom: none; }
+.fortune-table .th { font-family: 'Cormorant Garamond', serif; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--gold); min-width: 36px; padding-top: 2px; }
+.fortune-table .td { font-size: 0.85rem; color: var(--text-primary); line-height: 1.6; font-weight: 300; }
+.fortune-table .td.highlight { color: var(--gold-light); font-weight: 600; font-size: 0.9rem; }
+
+/* ─── Zodiac ─── */
+.zodiac-row { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 24px; }
+.zodiac-symbol { font-size: 1.8rem; }
+.zodiac-name   { font-size: 0.9rem; font-weight: 600; }
+.zodiac-desc   { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+
+/* ─── 대운 ─── */
+.daewoon-section { margin-bottom: 8px; }
+.daewoon-list { display: flex; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); overflow-x: auto; padding-bottom: 4px; }
+.daewoon-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 44px; padding: 10px 6px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); flex-shrink: 0; }
+.daewoon-age   { font-size: 0.58rem; color: var(--text-dim); font-family: 'Cormorant Garamond', serif; }
+.daewoon-kanji { font-size: 1rem; font-weight: 700; }
+
+/* ─── 운세 카드 — 내부 stacking context 없이 단순하게 ─── */
+.quote-card {
+  border-radius: 20px; padding: 28px 24px;
+  border: 1px solid var(--border-strong);
+  position: relative;
+  /* pseudo-element을 뒤로 보내기 위해 isolation만 */
+  isolation: isolate;
+}
+/* 큰 따옴표 장식 — 뒤에 배치 */
+.quote-card::before {
+  content: '"';
+  position: absolute; top: -8px; left: 14px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 6rem; line-height: 1;
+  pointer-events: none; z-index: -1;
+  color: rgba(201,168,76,0.07);
+  transition: color 0.5s;
+}
+
+/* 등급별 quote-card 배경·테두리 */
+.quote-card.grade-daegil {
+  background: linear-gradient(145deg, #1a1506 0%, #120f04 100%);
+  border-color: rgba(251,191,36,0.5);
+  box-shadow: 0 8px 40px rgba(251,191,36,0.1), inset 0 1px 0 rgba(251,191,36,0.12);
+}
+.quote-card.grade-daegil::before { color: rgba(251,191,36,0.12); }
+
+.quote-card.grade-gil {
+  background: linear-gradient(145deg, #170f04 0%, #0f0a02 100%);
+  border-color: rgba(245,158,11,0.4);
+  box-shadow: 0 4px 24px rgba(245,158,11,0.07);
+}
+.quote-card.grade-gil::before { color: rgba(245,158,11,0.1); }
+
+.quote-card.grade-jungil {
+  background: linear-gradient(145deg, #120b02 0%, #0e0802 100%);
+  border-color: rgba(217,119,6,0.32);
+}
+.quote-card.grade-sogil  { background: #0e0c08; border-color: rgba(180,130,60,0.22); }
+.quote-card.grade-pyeong { background: #0c0c12; border-color: rgba(100,116,139,0.25); }
+.quote-card.grade-pyeong::before { color: rgba(100,116,139,0.07); }
+
+.quote-card.grade-soheung {
+  background: linear-gradient(145deg, #150606 0%, #0f0404 100%);
+  border-color: rgba(185,28,28,0.38);
+  box-shadow: 0 4px 24px rgba(185,28,28,0.08);
+}
+.quote-card.grade-soheung::before { color: rgba(185,28,28,0.08); }
+
+.quote-card.grade-heung {
+  background: linear-gradient(145deg, #1a0404 0%, #120303 100%);
+  border-color: rgba(153,27,27,0.5);
+  box-shadow: 0 4px 32px rgba(153,27,27,0.12);
+}
+.quote-card.grade-heung::before { color: rgba(153,27,27,0.1); }
+
+/* 대길 shimmer — z-index: -1로 텍스트 뒤에 */
+.quote-card.grade-daegil::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(251,191,36,0.06) 50%, transparent 60%);
+  background-size: 200% 100%;
+  animation: shimmer-sweep 3.5s linear infinite;
+  border-radius: 20px;
+  pointer-events: none; z-index: -1;
+}
+@keyframes shimmer-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── 등급 배지 ─── */
+.grade-badge {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px; padding: 10px 14px;
+  border-radius: 12px; background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.07);
+  position: relative; z-index: 1;
+}
+.grade-badge.grade-daegil { border-color: rgba(251,191,36,0.35); }
+.grade-badge.grade-gil    { border-color: rgba(245,158,11,0.3); }
+.grade-badge.grade-jungil { border-color: rgba(217,119,6,0.25); }
+.grade-badge.grade-soheung{ border-color: rgba(185,28,28,0.25); }
+.grade-badge.grade-heung  { border-color: rgba(153,27,27,0.3); }
+
+.grade-emoji { font-size: 1rem; flex-shrink: 0; color: var(--text-primary); }
+.grade-text  { display: flex; flex-direction: column; flex: 1; }
+.grade-kr    { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.grade-en    { font-family: 'Cormorant Garamond', serif; font-size: 0.62rem; letter-spacing: 0.12em; color: var(--text-dim); margin-top: 3px; }
+.grade-desc-tag {
+  font-family: 'Cormorant Garamond', serif; font-size: 0.66rem;
+  letter-spacing: 0.08em; padding: 3px 10px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);
+}
+
+/* 등급별 grade-kr 색상 */
+.grade-badge.grade-daegil .grade-kr { color: #fbbf24; text-shadow: 0 0 10px rgba(251,191,36,0.5); }
+.grade-badge.grade-gil    .grade-kr { color: #f59e0b; }
+.grade-badge.grade-jungil .grade-kr { color: #d97706; }
+.grade-badge.grade-sogil  .grade-kr { color: #b48240; }
+.grade-badge.grade-pyeong .grade-kr { color: #94a3b8; }
+.grade-badge.grade-soheung .grade-kr { color: #f87171; }
+.grade-badge.grade-heung  .grade-kr  { color: #ef4444; }
+
+/* ─── 날짜 레이블 ─── */
+.date-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.68rem; letter-spacing: 0.2em;
+  color: var(--text-dim); text-align: center;
+  margin-bottom: 18px; position: relative; z-index: 1;
+}
+
+/* ─── 텍스트 요소들 — 모두 z-index:1로 ::before/::after 위에 ─── */
+.quote-text {
+  font-size: 0.98rem; line-height: 1.85;
+  color: var(--text-primary); font-weight: 300; margin-bottom: 16px;
+  position: relative; z-index: 1;
+}
+.quote-detail {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.82rem; color: var(--text-dim); font-style: italic; line-height: 1.6;
+  position: relative; z-index: 1;
+}
+.quote-author {
+  margin-top: 14px; font-family: 'Cormorant Garamond', serif;
+  font-size: 0.78rem; color: var(--text-dim);
+  position: relative; z-index: 1;
+}
+
+/* ─── 내일 새로고침 안내 ─── */
+.daily-refresh-notice {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 20px; padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07); border-radius: 10px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.72rem; letter-spacing: 0.05em; color: var(--text-dim);
+  position: relative; z-index: 1;
+}
+.refresh-icon { font-size: 0.9rem; color: var(--gold); flex-shrink: 0; }
+
+/* ─── Divider ─── */
+.divider { display: flex; align-items: center; gap: 10px; margin: 18px 0; position: relative; z-index: 1; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+.divider-icon { color: var(--gold); font-size: 0.6rem; }
+
+/* ─── Action buttons ─── */
+.action-group { display: flex; gap: 12px; width: 100%; max-width: 440px; }
+.btn-save {
+  flex: 1; background: var(--text-primary); color: #07070d;
+  border: none; border-radius: 14px; padding: 14px;
+  font-family: 'Noto Serif KR', serif; font-weight: 700; font-size: 0.85rem;
+  cursor: pointer; transition: filter 0.2s, opacity 0.2s;
+}
+.btn-save:hover    { filter: brightness(0.92); }
+.btn-save:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-reset {
+  flex: 1; background: transparent; color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+  font-family: 'Noto Serif KR', serif; font-size: 0.85rem; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.btn-reset:hover { border-color: var(--border-strong); }
+
+/* ─── Animations ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fade-up { animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.fade-in { animation: fadeIn 0.45s ease both; }
+.stagger-1 { animation-delay: 0.06s; }
+.stagger-2 { animation-delay: 0.14s; }
+.stagger-3 { animation-delay: 0.22s; }
+.stagger-4 { animation-delay: 0.30s; }
+.stagger-5 { animation-delay: 0.38s; }
+.stagger-6 { animation-delay: 0.46s; }
+
+/* ─── Loading ─── */
+.loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 20px; }
+.loading-orb { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border-strong); border-top-color: var(--gold); animation: spin-ring 1s linear infinite; }
+.loading-text { font-family: 'Cormorant Garamond', serif; font-size: 0.78rem; letter-spacing: 0.28em; color: var(--gold); opacity: 0.7; }
+
+/* ─── Responsive ─── */
+@media (max-width: 400px) {
+  .dialog-box  { padding: 28px 18px; }
+  .wonguk-char { font-size: 1.4rem; }
+}
+
+/* ─── 💥 엎어버리기 ─── */
+.btn-smash {
+  flex: none;
+  width: 48px; height: 48px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,80,80,0.25);
+  border-radius: 14px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-smash:hover {
+  background: rgba(220,40,40,0.12);
+  border-color: rgba(255,80,80,0.55);
+  transform: rotate(-8deg) scale(1.1);
+}
+.btn-smash:active { transform: rotate(12deg) scale(0.95); }
+
+/* 카드 — 회전하며 날아가기 */
+@keyframes smash-card {
+  0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  15%  { transform: translateY(-18px) rotate(-6deg) scale(1.04); opacity: 1; }
+  100% { transform: translateY(140vh) rotate(720deg) scale(0.3); opacity: 0; }
+}
+
+/* 캐릭터 — 반대 방향으로 튕겨 올라가기 */
+@keyframes smash-char {
+  0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  20%  { transform: translateY(10px) rotate(5deg) scale(1.05); opacity: 1; }
+  100% { transform: translateY(-160vh) rotate(-540deg) scale(0.2); opacity: 0; }
+}
+
+/* 버튼 그룹 — 좌우로 튕겨나가기 */
+@keyframes smash-btns {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  30%  { transform: translateY(-8px) scale(1.03); }
+  100% { transform: translateY(80vh) scale(0.1) rotate(180deg); opacity: 0; }
+}
+
+.dialog-box.smashing {
+  animation: smash-card 0.85s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+.character-wrap.smashing-char {
+  animation: smash-char 0.75s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.05s forwards;
+}
+.action-group.smashing {
+  animation: smash-btns 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.1s forwards;
+}
