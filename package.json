@@ -10,7 +10,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.0",
@@ -26,6 +28,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.0",
+    "@vitest/ui": "^4.1.5",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -33,6 +36,7 @@
     "globals": "^17.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.0.0"
+    "vite": "^8.0.0",
+    "vitest": "^4.1.5"
   }
 }

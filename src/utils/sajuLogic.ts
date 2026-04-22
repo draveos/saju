@@ -13,9 +13,11 @@ const BRANCH_E = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
 const JEOLGI_MO = [[1,6],[2,4],[3,6],[4,5],[5,6],[6,6],[7,7],[8,7],[9,8],[10,8],[11,7],[12,7]];
 const JEOLGI_BR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0];
 
-const REF_DATE = new Date(2000, 0, 1);
-const REF_STEM = 6; // 庚
-const REF_BRANCH = 4; // 辰
+// 2000-01-01 = 戊午일 (한국천문연구원/만세력 기준). 과거 庚辰로 하드코딩되어 모든 일주가 38일 어긋나있었음.
+// UTC 기준으로 통일해서 historical DST(예: 한국 1948-1951, 1987-88) 영향 회피.
+const REF_UTC_MS = Date.UTC(2000, 0, 1);
+const REF_STEM = 4; // 戊
+const REF_BRANCH = 6; // 午
 
 export const getSeededRandom = (seed: number) => {
     let s = seed;
@@ -41,7 +43,7 @@ export const getSipsin = (dayStemIdx: number, otherStemIdx: number): string => {
 };
 
 export const calcSaju = (y: number, m: number, d: number, h: number, gender: string) => {
-    const birth = new Date(y, m - 1, d);
+    const birthUtcMs = Date.UTC(y, m - 1, d);
 
     // 연주
     const sajuYear = (m < 2 || (m === 2 && d < 4)) ? y - 1 : y;
@@ -61,7 +63,7 @@ export const calcSaju = (y: number, m: number, d: number, h: number, gender: str
     const ms = (msBase + (mbIdx - 2 + 12) % 12) % 10;
 
     // 일주
-    const diffDays = Math.floor((birth.getTime() - REF_DATE.getTime()) / (1000 * 60 * 60 * 24)) + (h === 23 ? 1 : 0);
+    const diffDays = Math.floor((birthUtcMs - REF_UTC_MS) / (1000 * 60 * 60 * 24)) + (h === 23 ? 1 : 0);
     const ds = ((REF_STEM + (diffDays % 10)) % 10 + 10) % 10;
     const db = ((REF_BRANCH + (diffDays % 12)) % 12 + 12) % 12;
 

@@ -5,6 +5,10 @@ import {
   getSeededRandom, calcSaju, getSipsin, STEMS, BRANCHES,
   ELEMENTS, ELEM_COLORS, getWesternZodiac, getDaewoon, DAY_MASTER_DATA
 } from './utils/sajuLogic';
+import { sinsalAt, sinsalDef } from './data/sinsal';
+import { unseongAt, unseongDef } from './data/unseong';
+import { generateNarrative } from './utils/narrative';
+import { FortuneTellerScene } from './components/FortuneTellerScene';
 
 type AppStep = 'intro' | 'input' | 'result';
 
@@ -81,14 +85,19 @@ const buildSaveHTML = (result: any, formName: string): string => {
   let body = '';
 
   if (result.type === 'saju') {
+    const yearBranch = result.saju.pillars.year[1];
     const pillars = ['hour','day','month','year'].map((k,i) => {
       const [s,b] = result.saju.pillars[k];
       const isDay = k === 'day';
+      const sinsal = sinsalDef(sinsalAt(yearBranch, b));
+      const unseong = unseongDef(unseongAt(result.saju.dayStemIdx, b));
       return `<div style="background:${isDay?'rgba(201,168,76,.12)':'rgba(255,255,255,.03)'};border:1px solid ${isDay?'rgba(201,168,76,.38)':'rgba(201,168,76,.15)'};border-radius:16px;padding:14px 6px;text-align:center;">
         <div style="font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:2px;color:#7a7060;margin-bottom:8px;">${['시','일','월','연'][i]}</div>
         <div style="font-size:28px;font-weight:700;color:${EC[s%5]};line-height:1.2;">${STC[s]}</div>
         <div style="font-size:28px;font-weight:700;color:${EC[b%5]};line-height:1.2;">${BRC[b]}</div>
         <div style="font-size:10px;color:#7a7060;margin-top:6px;">${isDay?'일간':''}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:1px;color:${isDay?'#c9a84c':'#7a7060'};margin-top:3px;opacity:.85;">${sinsal.nameKr}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:1px;color:#7a7060;margin-top:2px;opacity:.7;">${unseong.nameKr}</div>
       </div>`;
     }).join('');
 
@@ -276,7 +285,7 @@ const buildSaveHTML = (result: any, formName: string): string => {
 
   <div class="page" id="capture">
     <div>
-      <img src="/front_character.png" class="char-img" alt="Oracle" onerror="this.style.display='none'">
+      <img src="https://draveos.github.io/saju/front_character.png" class="char-img" alt="Oracle" ... />
       <p class="char-label">Celestial Oracle</p>
     </div>
     <div class="card">
@@ -347,7 +356,7 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    fetch('/fortune_data.json').then(r => r.json()).then(setData)
+    fetch('./fortune_data.json').then(r => r.json()).then(setData)
         .catch(e => console.error('Data load error:', e));
   }, []);
 
@@ -432,7 +441,7 @@ const App: React.FC = () => {
           {/* Character */}
           <div className={`character-wrap fade-in ${smashing ? 'smashing-char' : ''}`}>
             <div className="character-ring" />
-            <img src="/front_character.png" className="character-img" alt="Fortune Teller" />
+            <img src={`${import.meta.env.BASE_URL}front_character.png`} className="character-img" alt="Fortune Teller" />
             <span className="character-label">Celestial Oracle</span>
           </div>
 
@@ -511,15 +520,32 @@ const App: React.FC = () => {
 
                   {result.type === 'saju' ? (
                       <>
+                        <FortuneTellerScene
+                          lines={generateNarrative({
+                            name: form.name,
+                            dayStemIdx: result.saju.dayStemIdx,
+                            pillars: result.saju.pillars,
+                            dayMasterKey: result.dm.key,
+                            counts: result.saju.counts,
+                            daewoon: result.daewoon,
+                            userAge: form.year ? (new Date().getFullYear() - Number(form.year)) : undefined,
+                            forward: result.saju.forward,
+                          })}
+                        />
                         <div className="wonguk-grid fade-up stagger-2">
                           {(['hour','day','month','year'] as const).map((k,i) => {
                             const [s,b] = result.saju.pillars[k];
+                            const yearBranch = result.saju.pillars.year[1];
+                            const sinsal = sinsalDef(sinsalAt(yearBranch, b));
+                            const unseong = unseongDef(unseongAt(result.saju.dayStemIdx, b));
                             return (
                                 <div key={k} className={`wonguk-column ${k==='day'?'pillar-day':''}`}>
                                   <div className="wonguk-label">{['시','일','월','연'][i]}</div>
                                   <div className="wonguk-char" style={{ color: ELEM_COLORS[s%5] }}>{STEMS[s]}</div>
                                   <div className="wonguk-char" style={{ color: ELEM_COLORS[b%5] }}>{BRANCHES[b]}</div>
                                   <div className="wonguk-sipsin">{k==='day'?'일간':getSipsin(result.saju.dayStemIdx,s)}</div>
+                                  <div className="wonguk-sinsal" title={sinsal.theme}>{sinsal.nameKr}</div>
+                                  <div className="wonguk-unseong" title={unseong.theme}>{unseong.nameKr}</div>
                                 </div>
                             );
                           })}

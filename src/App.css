@@ -283,7 +283,116 @@ body {
 .wonguk-label { font-family: 'Cormorant Garamond', serif; font-size: 0.65rem; letter-spacing: 0.15em; color: var(--text-dim); margin-bottom: 8px; }
 .wonguk-char  { font-size: 1.7rem; font-weight: 700; line-height: 1.2; text-shadow: 0 0 20px currentColor; }
 .wonguk-sipsin { font-size: 0.6rem; color: var(--text-dim); margin-top: 6px; }
+.wonguk-sinsal { font-family: 'Cormorant Garamond', serif; font-size: 0.62rem; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 3px; opacity: 0.75; cursor: help; }
+.wonguk-unseong { font-family: 'Cormorant Garamond', serif; font-size: 0.6rem; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 2px; opacity: 0.6; cursor: help; }
 .pillar-day   { border-color: var(--border-strong); background: var(--gold-dim); }
+.pillar-day .wonguk-sinsal { color: var(--gold); opacity: 0.9; }
+.pillar-day .wonguk-unseong { color: var(--gold); opacity: 0.75; }
+
+/* 점쟁이 scene */
+.fortune-teller-scene {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 20px 18px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(201,168,76,0.025));
+  position: relative;
+  overflow: hidden;
+}
+.fortune-teller-scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(201,168,76,0.08) 0%, transparent 55%);
+  pointer-events: none;
+}
+.fortune-teller-figure {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  min-width: 140px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fortune-teller-img {
+  width: 180px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(201,168,76,0.25));
+  animation: ft-img-in 260ms ease-out;
+}
+@keyframes ft-img-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.fortune-teller-art {
+  font-family: 'Courier New', 'Menlo', monospace;
+  font-size: 0.72rem;
+  line-height: 1.1;
+  color: var(--gold);
+  text-shadow: 0 0 6px rgba(201,168,76,0.35);
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+.fortune-teller-dialogue {
+  position: relative;
+  z-index: 1;
+  min-height: 140px;
+}
+.ft-line {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text);
+  margin: 0 0 8px 0;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  animation: ft-line-in 220ms ease-out;
+}
+.ft-line-typing { color: var(--gold); }
+@keyframes ft-line-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ft-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--gold);
+  animation: ft-blink 0.9s steps(2) infinite;
+}
+@keyframes ft-blink { 50% { opacity: 0; } }
+.ft-skip {
+  margin-top: 8px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.ft-skip:hover { color: var(--gold); border-color: var(--gold); }
+
+@media (max-width: 640px) {
+  .fortune-teller-scene {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    text-align: center;
+  }
+  .fortune-teller-art { font-size: 0.58rem; justify-self: center; }
+  .fortune-teller-dialogue { text-align: left; }
+}
 
 /* ─── Element bars ─── */
 .section-label {
