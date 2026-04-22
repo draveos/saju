@@ -4,8 +4,13 @@
 
 import { sinsalAt, sinsalDef } from "../data/sinsal";
 import { unseongAt, unseongDef } from "../data/unseong";
+import { isGongmang } from "../data/gongmang";
+import { jiPairRelation, detectSamhyeong, detectJahyeong } from "../data/jiRelations";
+import { iljuAt } from "../data/ilju60";
 import { NARRATIVE_BANK } from "../data/narrativeBank";
 import type { NarrativeBankKey } from "../data/narrativeBank";
+import { findMatchingCombos } from "./comboEngine";
+import type { ComboFacts } from "./comboEngine";
 import { getSipsin, getSeededRandom } from "./sajuLogic";
 
 export interface NarrativeContext {
@@ -53,6 +58,44 @@ const SINSAL_TONE: Record<string, FortuneMood> = {
 const STEMS_KR = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
 const BRANCHES_KR = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
 const ELEMENT_KEYS = ["wood", "fire", "earth", "metal", "water"] as const;
+
+function buildFacts(ctx: NarrativeContext): ComboFacts {
+  const [yb, mb, hb] = [ctx.pillars.year[1], ctx.pillars.month[1], ctx.pillars.hour[1]];
+  const [ds, db] = ctx.pillars.day;
+  const dom = dominantElement(ctx.counts);
+  const weak = weakestElement(ctx.counts);
+  const dw = currentDaewoon(ctx);
+
+  const allBr = [yb, mb, db, hb];
+
+  return {
+    dayStem: ds,
+    dayBranch: db,
+    sinsalOn: {
+      year: sinsalDef(sinsalAt(yb, yb)).key,
+      month: sinsalDef(sinsalAt(yb, mb)).key,
+      day: sinsalDef(sinsalAt(yb, db)).key,
+      hour: sinsalDef(sinsalAt(yb, hb)).key,
+    },
+    unseongOn: {
+      year: unseongDef(unseongAt(ds, yb)).key,
+      month: unseongDef(unseongAt(ds, mb)).key,
+      day: unseongDef(unseongAt(ds, db)).key,
+      hour: unseongDef(unseongAt(ds, hb)).key,
+    },
+    domElement: ELEMENT_KEYS[dom.idx],
+    lackElement: weak.count === 0 ? ELEMENT_KEYS[weak.idx] : null,
+    gongmangOn: {
+      year: isGongmang(ds, db, yb),
+      month: isGongmang(ds, db, mb),
+      hour: isGongmang(ds, db, hb),
+    },
+    hasSamhyeong: !!detectSamhyeong(allBr),
+    hasJahyeong: detectJahyeong(allBr) !== null,
+    forward: ctx.forward,
+    currentDaewoonSipsin: dw ? getSipsin(ds, dw.s) : null,
+  };
+}
 
 function dominantElement(counts: number[]): { idx: number; count: number } {
   let maxI = 0;
@@ -107,6 +150,22 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
              + ctx.birthDay * 10_000 + ctx.birthHour * 100 + 1;
   const p = makePicker(seed);
 
+  // Combo rule facts + 매칭 (섹션별 그룹)
+  const facts = buildFacts(ctx);
+  const matchedCombos = findMatchingCombos(facts);
+  const combosBySection = {
+    opening: matchedCombos.filter((r) => r.insert.section === "opening"),
+    main: matchedCombos.filter((r) => r.insert.section === "main"),
+    closing: matchedCombos.filter((r) => r.insert.section === "closing"),
+  };
+  const pickComboLines = (section: "opening" | "main" | "closing", maxN: number) => {
+    const pool = combosBySection[section];
+    return pool.slice(0, maxN).map((r) => ({
+      text: p(r.insert.variations),
+      mood: (r.insert.mood ?? "insight") as FortuneMood,
+    }));
+  };
+
   // 1. Opening
   const hasName = !!(ctx.name && ctx.name.trim());
   const openTpl = hasName ? pick("opening_with_name", p) : pick("opening_no_name", p);
@@ -121,6 +180,9 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
     pauseAfterMs: 600,
     mood: "reading",
   });
+
+  // 1b. opening section combos (최대 1)
+  for (const l of pickComboLines("opening", 1)) lines.push(l);
 
   // 2. 일간 소개 (DAY_MASTER_DATA 기반 — bank 없이 직접 문장)
   lines.push({
@@ -152,6 +214,15 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
     mood: "insight",
   });
 
+  // 4b. ilju60 bank에서 해당 일주 variation (있을 경우만)
+  const iljuEntry = iljuAt(ds, db);
+  if (iljuEntry.variations.length > 0) {
+    lines.push({
+      text: p(iljuEntry.variations),
+      mood: "insight",
+    });
+  }
+
   // 5. 일지 신살
   lines.push({
     text: `년지로 비추어 보건대, 일지에 맺힌 신살은 ${daySinsal.nameKr}. 이는 ${daySinsal.theme}을(를) 뜻한다.`,
@@ -164,6 +235,72 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
     pauseAfterMs: 400,
     mood: "insight",
   });
+
+  // 6b. 공망 — 일지 기준으로 연/월/시 중 공망 걸린 곳 언급
+  const yearBr = ctx.pillars.year[1];
+  const monthBr = ctx.pillars.month[1];
+  const hourBr = ctx.pillars.hour[1];
+  if (isGongmang(ds, db, yearBr)) {
+    lines.push({ text: pick("gongmang_year", p), mood: "warning" });
+  }
+  if (isGongmang(ds, db, monthBr)) {
+    lines.push({ text: pick("gongmang_month", p), mood: "warning" });
+  }
+  if (isGongmang(ds, db, hourBr)) {
+    lines.push({ text: pick("gongmang_hour", p), mood: "warning" });
+  }
+
+  // 6c. 지지 관계 (충·파·해·형) — 4주 6 pair 중 있는 것 + 삼형/자형
+  const pillarPairs: Array<[string, string, number, number]> = [
+    ["연지", "월지", yearBr, monthBr],
+    ["연지", "일지", yearBr, db],
+    ["연지", "시지", yearBr, hourBr],
+    ["월지", "일지", monthBr, db],
+    ["월지", "시지", monthBr, hourBr],
+    ["일지", "시지", db, hourBr],
+  ];
+  // 삼형·자형은 특수 관계라 우선순위. 그 다음 pair 관계.
+  type JiEvent = { text: string; priority: number };
+  const jiEvents: JiEvent[] = [];
+  const allBr = [yearBr, monthBr, db, hourBr];
+
+  const sam = detectSamhyeong(allBr);
+  if (sam) {
+    jiEvents.push({
+      priority: 0,
+      text: fill(pick("ji_samhyeong", p), {
+        a: BRANCHES_KR[sam[0]],
+        b: BRANCHES_KR[sam[1]],
+        c: BRANCHES_KR[sam[2]],
+      }),
+    });
+  }
+  const jah = detectJahyeong(allBr);
+  if (jah !== null) {
+    jiEvents.push({
+      priority: 0,
+      text: fill(pick("ji_jahyeong", p), { a: BRANCHES_KR[jah] }),
+    });
+  }
+  for (const [posA, posB, brA, brB] of pillarPairs) {
+    const rel = jiPairRelation(brA, brB);
+    if (!rel) continue;
+    // 충 > 파/해/상형 우선순위
+    const prio = rel === "chung" ? 1 : 2;
+    const key = `ji_${rel}` as NarrativeBankKey;
+    jiEvents.push({
+      priority: prio,
+      text: fill(pick(key, p), { a: posA, b: posB }),
+    });
+  }
+  // 우선순위 순으로 최대 2개
+  jiEvents.sort((a, b) => a.priority - b.priority);
+  for (const ev of jiEvents.slice(0, 2)) {
+    lines.push({ text: ev.text, mood: "warning" });
+  }
+
+  // 6d. main section combos (최대 2) — 개인화된 맞춤 대사
+  for (const l of pickComboLines("main", 2)) lines.push(l);
 
   // 7. 현재 대운
   const dw = currentDaewoon(ctx);
@@ -185,6 +322,9 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
     pauseAfterMs: 500,
     mood: ctx.forward ? "encouraging" : "warning",
   });
+
+  // 8b. closing section combos (최대 1)
+  for (const l of pickComboLines("closing", 1)) lines.push(l);
 
   // 9. Closing — bank
   lines.push({

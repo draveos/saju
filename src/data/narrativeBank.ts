@@ -1,7 +1,7 @@
 // ⚠ AUTO-GENERATED from ~/.harness/saju/rulebook/narrative_bank.json
 // ⚠ DO NOT EDIT BY HAND. Run ~/.harness/saju/codegen/narrative_bank_to_ts.py to regenerate.
 
-export type NarrativeBankKey = "closing_final" | "closing_wisdom" | "daewoon_backward" | "daewoon_forward" | "element_balance" | "element_dom_earth" | "element_dom_fire" | "element_dom_metal" | "element_dom_water" | "element_dom_wood" | "element_lack_earth" | "element_lack_fire" | "element_lack_metal" | "element_lack_water" | "element_lack_wood" | "opening_no_name" | "opening_with_name" | "reading";
+export type NarrativeBankKey = "closing_final" | "closing_wisdom" | "daewoon_backward" | "daewoon_forward" | "element_balance" | "element_dom_earth" | "element_dom_fire" | "element_dom_metal" | "element_dom_water" | "element_dom_wood" | "element_lack_earth" | "element_lack_fire" | "element_lack_metal" | "element_lack_water" | "element_lack_wood" | "gongmang_hour" | "gongmang_month" | "gongmang_year" | "ji_chung" | "ji_hae" | "ji_jahyeong" | "ji_pa" | "ji_samhyeong" | "ji_sanghyeong" | "opening_no_name" | "opening_with_name" | "reading";
 
 export const NARRATIVE_BANK: Record<NarrativeBankKey, readonly string[]> = {
   closing_final: [
@@ -80,6 +80,48 @@ export const NARRATIVE_BANK: Record<NarrativeBankKey, readonly string[]> = {
     `허나 木의 자리가 비었구나. 새로 움트는 의지를 곁에 두어야 하느니라.`,
     `木이 빠져있다. 뻗어나가는 결심을 스스로 일깨워야 할 때다.`,
     `그대의 사주에 木이 없으니, 성장을 향한 작은 걸음부터 이어나가라.`,
+  ],
+  gongmang_hour: [
+    `시주의 자리에 공망이 서렸다. 자녀·말년의 결이 흐릿하니, 결실보단 과정에 무게를 두어라.`,
+    `시지가 비어있구나. 노년의 풍경이 예측하기 어려운 흐름이다.`,
+    `시주 공망 — 끝맺음이 가벼워질 터. 매듭은 그대가 의식해서 지어야 한다.`,
+  ],
+  gongmang_month: [
+    `월주의 자리에 공망이 서렸다. 조직·부모·형제 자리의 기운이 흐릿하다.`,
+    `월지가 비어있으니, 가족·사회 관계에서 공허함을 자주 느끼겠노라.`,
+    `월주 공망 — 소속의 끈이 약하다. 정해진 틀 밖에서 더 빛날 수 있다.`,
+  ],
+  gongmang_year: [
+    `연주의 자리에 공망이 서렸다. 조상·뿌리의 기운과 거리가 있다는 뜻이니, 스스로의 힘으로 시작해야 하는 흐름이다.`,
+    `연지가 비어있구나. 배경의 덕보단 자신의 길을 내야 하는 사주다.`,
+    `연주 공망 — 출신·가계의 힘이 희미하다. 하지만 비어있기에 더 자유롭다.`,
+  ],
+  ji_chung: [
+    `{a}지와 {b}지가 충(沖)한다. 두 자리 사이에 팽팽한 충돌이 서렸으니, 변동과 이별의 바람이 오가는 흐름이다.`,
+    `{a}지와 {b}지의 충. 정면으로 부딪히는 기운이라, 자리가 바뀌거나 관계가 끊길 때가 있다.`,
+    `{a}-{b} 충 — 강한 변화의 축이다. 맞부딪히는 힘을 억누르기보단 방향을 돌려 써야 한다.`,
+  ],
+  ji_hae: [
+    `{a}지와 {b}지가 해(害)한다. 보이지 않는 방해와 질투의 기운이 그 자리에 앉는다.`,
+    `{a}-{b} 해 — 겉으론 평온해 보이나, 뒤에서 찌르는 작은 가시들이 있다.`,
+    `{a}지와 {b}지의 해. 드러나지 않는 시비가 그대를 지치게 할 수 있으니, 말과 관계를 정제하라.`,
+  ],
+  ji_jahyeong: [
+    `{a}지 자형 — 같은 기운이 나란히 서서 스스로를 상하게 한다. 자기 과잉을 경계하라.`,
+    `{a}지 자형이 있다. 자기 세계에 갇히기 쉬우니, 바깥 바람을 일부러 들이는 습관이 필요하다.`,
+  ],
+  ji_pa: [
+    `{a}지와 {b}지가 파(破)하니, 은근한 손상·관계의 틈이 숨어있다.`,
+    `{a}-{b} 파 — 겉은 멀쩡하나 속이 갈라지는 구석이 있다. 점검이 필요한 자리다.`,
+    `{a}지와 {b}지 사이 파의 기운. 큰 충돌은 아니되, 소리 없이 새는 물 같은 손해를 경계하라.`,
+  ],
+  ji_samhyeong: [
+    `{a}·{b}·{c} 삼형이 모였다. 세 지지가 맞물려 갈등의 삼각을 이루니, 관재·시비에 조심하라.`,
+    `삼형({a}·{b}·{c})이 성립한다 — 권력과 다툼의 별이다. 정면 승부는 득이 없다.`,
+  ],
+  ji_sanghyeong: [
+    `{a}지와 {b}지가 상형한다. 예절과 경계가 흐트러지는 자리이니, 감정의 날을 세우지 말라.`,
+    `{a}-{b} 상형 — 서로의 예의를 잃기 쉬운 관계다. 격식이 그대를 지켜준다.`,
   ],
   opening_no_name: [
     `...그대여, 드디어 왔는가.`,

@@ -7,6 +7,7 @@ import {
 } from './utils/sajuLogic';
 import { sinsalAt, sinsalDef } from './data/sinsal';
 import { unseongAt, unseongDef } from './data/unseong';
+import { isGongmang } from './data/gongmang';
 import { generateNarrative } from './utils/narrative';
 import { FortuneTellerScene } from './components/FortuneTellerScene';
 
@@ -86,13 +87,17 @@ const buildSaveHTML = (result: any, formName: string): string => {
 
   if (result.type === 'saju') {
     const yearBranch = result.saju.pillars.year[1];
+    const [dayStemSv, dayBranchSv] = result.saju.pillars.day;
     const pillars = ['hour','day','month','year'].map((k,i) => {
       const [s,b] = result.saju.pillars[k];
       const isDay = k === 'day';
       const sinsal = sinsalDef(sinsalAt(yearBranch, b));
       const unseong = unseongDef(unseongAt(result.saju.dayStemIdx, b));
-      return `<div style="background:${isDay?'rgba(201,168,76,.12)':'rgba(255,255,255,.03)'};border:1px solid ${isDay?'rgba(201,168,76,.38)':'rgba(201,168,76,.15)'};border-radius:16px;padding:14px 6px;text-align:center;">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:2px;color:#7a7060;margin-bottom:8px;">${['시','일','월','연'][i]}</div>
+      const empty = !isDay && isGongmang(dayStemSv, dayBranchSv, b);
+      const emptyDash = empty ? 'border-style:dashed;' : '';
+      const emptyMark = empty ? '<span style="margin-left:4px;font-size:9px;color:#c9a84c;opacity:.7;">◯</span>' : '';
+      return `<div style="background:${isDay?'rgba(201,168,76,.12)':'rgba(255,255,255,.03)'};border:1px solid ${isDay?'rgba(201,168,76,.38)':'rgba(201,168,76,.15)'};${emptyDash}border-radius:16px;padding:14px 6px;text-align:center;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:2px;color:#7a7060;margin-bottom:8px;">${['시','일','월','연'][i]}${emptyMark}</div>
         <div style="font-size:28px;font-weight:700;color:${EC[s%5]};line-height:1.2;">${STC[s]}</div>
         <div style="font-size:28px;font-weight:700;color:${EC[b%5]};line-height:1.2;">${BRC[b]}</div>
         <div style="font-size:10px;color:#7a7060;margin-top:6px;">${isDay?'일간':''}</div>
@@ -539,12 +544,14 @@ const App: React.FC = () => {
                         <div className="wonguk-grid fade-up stagger-2">
                           {(['hour','day','month','year'] as const).map((k,i) => {
                             const [s,b] = result.saju.pillars[k];
+                            const [dayS, dayB] = result.saju.pillars.day;
                             const yearBranch = result.saju.pillars.year[1];
                             const sinsal = sinsalDef(sinsalAt(yearBranch, b));
                             const unseong = unseongDef(unseongAt(result.saju.dayStemIdx, b));
+                            const empty = k !== 'day' && isGongmang(dayS, dayB, b);
                             return (
-                                <div key={k} className={`wonguk-column ${k==='day'?'pillar-day':''}`}>
-                                  <div className="wonguk-label">{['시','일','월','연'][i]}</div>
+                                <div key={k} className={`wonguk-column ${k==='day'?'pillar-day':''} ${empty?'pillar-gongmang':''}`}>
+                                  <div className="wonguk-label">{['시','일','월','연'][i]}{empty && <span className="gongmang-mark" title="공망 — 해당 지지의 기운이 허하다">◯</span>}</div>
                                   <div className="wonguk-char" style={{ color: ELEM_COLORS[s%5] }}>{STEMS[s]}</div>
                                   <div className="wonguk-char" style={{ color: ELEM_COLORS[b%5] }}>{BRANCHES[b]}</div>
                                   <div className="wonguk-sipsin">{k==='day'?'일간':getSipsin(result.saju.dayStemIdx,s)}</div>
