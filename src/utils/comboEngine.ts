@@ -20,6 +20,7 @@ export interface ComboFacts {
   hasSamhap: boolean;
   hasBanghap: boolean;
   hasGanhap: boolean;
+  gender: "M" | "F";
 }
 
 function checkCondition(key: keyof ComboWhen, expected: unknown, f: ComboFacts): boolean {
@@ -49,6 +50,7 @@ function checkCondition(key: keyof ComboWhen, expected: unknown, f: ComboFacts):
     case "has_samhap":    return f.hasSamhap === expected;
     case "has_banghap":   return f.hasBanghap === expected;
     case "has_ganhap":    return f.hasGanhap === expected;
+    case "gender":        return f.gender === expected;
   }
 }
 

@@ -24,6 +24,7 @@ const baseCtx = {
   birthMonth: 6,
   birthDay: 15,
   birthHour: 12,
+  gender: "M" as "M" | "F",
 };
 
 describe("narrative generateNarrative", () => {

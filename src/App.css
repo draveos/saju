@@ -311,11 +311,11 @@ body {
 
 /* 점쟁이 scene */
 .fortune-teller-scene {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 24px;
-  align-items: flex-start;
-  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 26px 20px;
   margin-bottom: 28px;
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -327,14 +327,12 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 30%, rgba(201,168,76,0.08) 0%, transparent 55%);
+  background: radial-gradient(circle at 50% 20%, rgba(201,168,76,0.1) 0%, transparent 60%);
   pointer-events: none;
 }
 .fortune-teller-figure {
-  flex-shrink: 0;
   position: relative;
   z-index: 1;
-  min-width: 140px;
   min-height: 180px;
   display: flex;
   align-items: center;
@@ -367,6 +365,8 @@ body {
   position: relative;
   z-index: 1;
   min-height: 140px;
+  width: 100%;
+  max-width: 640px;
 }
 .ft-line {
   font-size: 0.9rem;
@@ -406,59 +406,73 @@ body {
 
 @media (max-width: 640px) {
   .fortune-teller-scene {
-    grid-template-columns: 1fr;
     gap: 14px;
-    text-align: center;
+    padding: 18px 14px;
   }
-  .fortune-teller-art { font-size: 0.58rem; justify-self: center; }
+  .fortune-teller-art { font-size: 0.58rem; }
   .fortune-teller-dialogue { text-align: left; }
 }
 
-/* 사주 리포트 카드 */
-.report-section { margin-top: 28px; }
-.report-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+/* 사주 리포트 카드 — 카테고리별 색상 + dashed separator */
+.report-section { margin-top: 32px; }
+.report-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   margin-top: 12px;
 }
+
+/* dashed separator headers */
+.report-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0 6px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.32em;
+  color: var(--cat-color, var(--gold));
+  text-transform: uppercase;
+  opacity: 0.95;
+}
+.report-divider::before,
+.report-divider::after {
+  content: "";
+  flex: 1;
+  height: 0;
+  border-top: 1px dashed var(--cat-color, var(--gold));
+  opacity: 0.55;
+}
+.report-divider-icon {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
 .report-card {
   background: rgba(255,255,255,0.02);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-left: 3px solid var(--cat-color, var(--gold));
+  border-radius: 12px;
+  padding: 14px 18px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   transition: border-color 160ms ease, background 160ms ease;
 }
-.report-card:hover { border-color: rgba(201,168,76,0.35); background: rgba(255,255,255,0.035); }
+.report-card:hover {
+  background: rgba(255,255,255,0.035);
+  border-color: var(--cat-color, var(--gold));
+}
 .report-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(201,168,76,0.15);
-  margin-bottom: 4px;
-}
-.report-icon {
-  font-size: 0.95rem;
-  color: var(--gold);
-  opacity: 0.85;
-}
-.report-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 0.85rem;
-  letter-spacing: 0.1em;
-  color: var(--gold);
+  display: none;  /* divider가 헤더 역할을 하므로 카드 내부 헤더 숨김 */
 }
 .report-line {
-  font-size: 0.82rem;
-  line-height: 1.55;
+  font-size: 0.88rem;
+  line-height: 1.62;
   color: var(--text);
   font-weight: 300;
   margin: 0;
-  opacity: 0.9;
+  opacity: 0.92;
 }
 .report-line-muted { color: var(--text-dim); opacity: 0.7; font-style: italic; }
 .lucky-age-list {
@@ -470,14 +484,32 @@ body {
 .lucky-age-item {
   display: grid;
   grid-template-columns: auto auto 1fr;
-  gap: 10px;
+  gap: 12px;
   align-items: baseline;
-  padding: 4px 0;
-  font-size: 0.76rem;
+  padding: 5px 0;
+  font-size: 0.8rem;
+  border-top: 1px dashed rgba(201,168,76,0.12);
 }
-.lucky-age-range { color: var(--gold); font-family: 'Cormorant Garamond', serif; min-width: 52px; }
+.lucky-age-item:first-child { border-top: 0; }
+.lucky-age-range { color: var(--cat-color, var(--gold)); font-family: 'Cormorant Garamond', serif; min-width: 60px; font-weight: 500; }
 .lucky-age-kanji { color: var(--text); font-weight: 500; }
-.lucky-age-reason { color: var(--text-dim); opacity: 0.8; font-size: 0.72rem; }
+.lucky-age-reason { color: var(--text-dim); opacity: 0.8; font-size: 0.74rem; }
+
+/* 카테고리별 색상 변수 */
+.report-strengths   { --cat-color: #f0c87a; }   /* 노란빛 */
+.report-cautions    { --cat-color: #e08070; }   /* 살짝 붉은빛 */
+.report-love        { --cat-color: #e896b8; }   /* 분홍 */
+.report-partner     { --cat-color: #d6a4d8; }   /* 라벤더 */
+.report-marriage    { --cat-color: #b298dc; }   /* 보라 */
+.report-wealth      { --cat-color: #c9a84c; }   /* 골드 */
+.report-career      { --cat-color: #7eb6c9; }   /* 청색 */
+.report-academic    { --cat-color: #82cdb5; }   /* 청록 */
+.report-health      { --cat-color: #8ed09e; }   /* 녹색 */
+.report-friendship  { --cat-color: #c8d680; }   /* 라임 */
+.report-lucky_ages  { --cat-color: #f5dc88; }   /* 빛나는 골드 */
+.report-partner_look  { --cat-color: #f0a8c4; }  /* 옅은 분홍 */
+.report-marriage_look { --cat-color: #c4a8e0; }  /* 옅은 보라 */
+.report-marriage_age  { --cat-color: #f0d878; }  /* 황금 */
 
 /* ─── Element bars ─── */
 .section-label {
@@ -508,7 +540,7 @@ body {
 
 /* ─── 대운 ─── */
 .daewoon-section { margin-bottom: 8px; }
-.daewoon-list { display: flex; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); overflow-x: auto; padding-bottom: 4px; }
+.daewoon-list { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border); justify-content: center; padding-bottom: 4px; }
 .daewoon-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 44px; padding: 10px 6px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02); flex-shrink: 0; }
 .daewoon-age   { font-size: 0.58rem; color: var(--text-dim); font-family: 'Cormorant Garamond', serif; }
 .daewoon-kanji { font-size: 1rem; font-weight: 700; }

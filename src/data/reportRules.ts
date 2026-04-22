@@ -1,7 +1,7 @@
 // ⚠ AUTO-GENERATED from ~/.harness/saju/rulebook/report_rules.json
 // ⚠ DO NOT EDIT BY HAND. Run ~/.harness/saju/codegen/report_rules_to_ts.py to regenerate.
 
-export type ReportCategory = "strengths" | "cautions" | "love" | "partner" | "marriage" | "wealth" | "career" | "academic" | "health" | "friendship" | "lucky_ages";
+export type ReportCategory = "strengths" | "cautions" | "love" | "partner" | "partner_look" | "marriage" | "marriage_look" | "marriage_age" | "wealth" | "career" | "academic" | "health" | "friendship" | "lucky_ages";
 
 export interface ReportCategoryMeta {
   key: ReportCategory;
@@ -15,13 +15,16 @@ export const REPORT_CATEGORIES: readonly ReportCategoryMeta[] = [
   { key: "cautions", labelKr: "주의할 점", icon: "⚠", order: 1 },
   { key: "love", labelKr: "연애운", icon: "❤", order: 2 },
   { key: "partner", labelKr: "연애 상대", icon: "♡", order: 3 },
-  { key: "marriage", labelKr: "결혼 상대", icon: "◈", order: 4 },
-  { key: "wealth", labelKr: "재물운", icon: "⟡", order: 5 },
-  { key: "career", labelKr: "직업운", icon: "◇", order: 6 },
-  { key: "academic", labelKr: "학업운", icon: "✎", order: 7 },
-  { key: "health", labelKr: "건강운", icon: "♆", order: 8 },
-  { key: "friendship", labelKr: "친구관계", icon: "◍", order: 9 },
-  { key: "lucky_ages", labelKr: "대길 나이", icon: "☀", order: 10 },
+  { key: "partner_look", labelKr: "연애 상대 인상", icon: "✿", order: 4 },
+  { key: "marriage", labelKr: "결혼 상대", icon: "◈", order: 5 },
+  { key: "marriage_look", labelKr: "결혼 상대 인상", icon: "❀", order: 6 },
+  { key: "marriage_age", labelKr: "결혼 시기", icon: "✧", order: 7 },
+  { key: "wealth", labelKr: "재물운", icon: "⟡", order: 8 },
+  { key: "career", labelKr: "직업운", icon: "◇", order: 9 },
+  { key: "academic", labelKr: "학업운", icon: "✎", order: 10 },
+  { key: "health", labelKr: "건강운", icon: "♆", order: 11 },
+  { key: "friendship", labelKr: "친구관계", icon: "◍", order: 12 },
+  { key: "lucky_ages", labelKr: "대길 나이", icon: "☀", order: 13 },
 ] as const;
 
 export const REPORT_FALLBACKS: Record<ReportCategory, readonly string[]> = {
@@ -41,9 +44,21 @@ export const REPORT_FALLBACKS: Record<ReportCategory, readonly string[]> = {
     `그대와 기질이 정반대인 사람에게 끌리기 쉬우나, 오래 함께할 결은 가치관이 통하는 쪽이다.`,
     `자신의 오행 중 약한 부분을 채워주는 상대를 의식해서 보라. 그런 만남이 오래간다.`
   ],
+  partner_look: [
+    `끌리는 인상은 사주의 일지·재성 기운에서 단서를 잡되, 사람은 결국 결로 만난다는 점을 잊지 말 것.`,
+    `외모의 결은 그대 사주의 결핍·과잉을 보완하는 쪽으로 끌리는 경우가 많다.`
+  ],
   marriage: [
     `결혼은 사주의 큰 매듭 중 하나다 — 한 번에 결정하려 하기보단 시기와 흐름을 함께 보라.`,
     `같은 리듬을 가진 사람보다, 다른 리듬에 호흡을 맞출 수 있는 사람이 평생의 동반자가 된다.`
+  ],
+  marriage_look: [
+    `결혼 상대의 인상은 일지(배우자궁)와 그 합·충 자리에서 추정되나, 어디까지나 경향이다.`,
+    `오래 함께할 사람의 외모는 첫 끌림보다 시간이 빚어가는 결이라는 점을 기억하라.`
+  ],
+  marriage_age: [
+    `대운 천간이 배우자성(남: 정/편재, 여: 정/편관)으로 들어오는 구간이 결혼 가능성이 높은 시기다.`,
+    `구체 나이는 인연·환경의 변수에 따르나, 아래 구간을 그 기준으로 참고하라.`
   ],
   wealth: [
     `재물은 그대의 오행 균형이 잡혀있을 때 따라붙는다. 한쪽으로 쏠린 욕심이 샛길을 만든다.`,
@@ -143,4 +158,22 @@ export const REPORT_RULES: readonly ReportRule[] = [
   { id: "academic_inseong_day", category: "academic", when: { unseong_on_day: "geonnok" }, lines: [`일지 건록 — 자립 정신이 강해 스스로 학습 계획을 짜는 방식이 어울린다. 외부 강제는 오히려 비효율.`, `건록의 운성 — 직업·자격증 같은 실용 학습에 강한 결이다.`] },
   { id: "health_lack_water", category: "health", when: { lack_element: "water" }, lines: [`水가 빠져 신장·방광·생식기 계통이 약하다. 충분한 수분 섭취와 따뜻한 하체 관리를 의식하라.`, `물의 기운이 부족하니 피로가 쉽게 쌓인다 — 휴식의 양과 질을 우선순위로 두어라.`] },
   { id: "friendship_metal_dom", category: "friendship", when: { dom_element: "metal" }, lines: [`金의 기운이 강해 친구 관계에서 호불호가 분명하다. 한번 끊은 인연은 다시 잘 잇지 않는 편이다.`, `쇠의 결 — 친구를 가려 사귀는 사주. 폭은 좁아도 깊이는 어느 누구보다 단단하다.`] },
+  { id: "partner_look_wood_branch", category: "partner_look", when: { day_branch_in: [2,3] }, lines: [`일지가 木 — 갸름한 V라인, 곧고 살짝 높은 콧선, 위로 길게 빠진 눈매. 강아지상보단 차분한 고양이상에 가까운 인상에 잘 끌린다. 키는 크고 마른 편이며, 자세가 곧다.`, `木 일지 — 단정하고 지적인 얼굴 (또렷한 이마선·살짝 좁은 턱), 안경 잘 어울리는 분위기, 정갈한 옷차림을 가진 사람에게 시선이 머문다.`] },
+  { id: "partner_look_fire_branch", category: "partner_look", when: { day_branch_in: [5,6] }, lines: [`일지가 火 — 짙은 눈썹, 위로 살짝 올라간 큰 눈, 또렷한 광대, 표정이 풍부한 강아지상 인상에 끌리는 결. 얼굴은 살짝 역삼각형(이마 넓고 턱 좁은)에 가깝다.`, `火 일지 — 미소가 시원하고 입꼬리가 위로 자연스럽게 올라가는 사람, 한눈에 봐도 에너지가 보이는 인상에서 자연스럽게 매력을 느낀다.`] },
+  { id: "partner_look_earth_branch", category: "partner_look", when: { day_branch_in: [1,4,7,10] }, lines: [`일지가 土 — 둥글둥글한 콧방울, 동그랗고 큰 눈, 살짝 두툼한 입술. 곰상·소상·아기상 같은 푸근하고 신뢰감 있는 인상에 자연스럽게 끌린다. 체격은 안정감 있는 편.`, `土 일지 — 미인형의 또렷함보다, 보고 있으면 마음이 편해지는 둥근 얼굴선의 사람에게 끌리는 결. 화려한 외모보단 한결같은 분위기가 더 와닿는다.`] },
+  { id: "partner_look_metal_branch", category: "partner_look", when: { day_branch_in: [8,9] }, lines: [`일지가 金 — 또렷하고 곧은 콧선, 강한 턱선, 정사각형에 가까운 얼굴, 무심한 듯 시원한 눈매의 시크한 고양이상에 잘 끌리는 결.`, `金 일지 — 깔끔하게 정돈된 헤어스타일, 군더더기 없는 옷차림, 화장기 적은 깨끗한 인상이 매력 포인트로 보이는 사주다.`] },
+  { id: "partner_look_water_branch", category: "partner_look", when: { day_branch_in: [0,11] }, lines: [`일지가 水 — 깊고 어두운 눈매(쌍꺼풀이 있어도 진하지 않은), 부드럽게 떨어지는 콧선, 윤기 있는 피부의 신비로운 인상에 끌린다. 얼굴 윤곽은 둥글되 갸름하다.`, `水 일지 — 잔잔하고 지적인, 말이 많지 않아도 시선을 끄는 분위기의 사람. 첫인상보다 두 번째·세 번째에 더 매력이 보이는 결이다.`] },
+  { id: "partner_look_dom_fire_male", category: "partner_look", when: { dom_element: "fire", gender: "M" }, lines: [`火 편중의 남성 — 차분하고 시원한 인상, 흰 피부에 또렷한 이목구비를 가진 여성에게 끌리는 결. 키보단 분위기가 정돈된 쪽, 살짝 차가워 보이는 고양이상에 시선이 자주 머문다.`, `본인이 활달한 만큼, 조용히 미소 짓는 단아한 인상·낮은 톤의 목소리를 가진 사람에게서 평온함을 느낀다.`] },
+  { id: "partner_look_dom_water_female", category: "partner_look", when: { dom_element: "water", gender: "F" }, lines: [`水 편중의 여성 — 따뜻하고 환한 분위기의 남성에게 끌리는 결. 짙은 눈썹·잘 웃는 입매·강아지상에 가까운 친근한 인상이 매력 포인트로 보인다.`, `본인이 깊이 있는 만큼, 가볍게 분위기를 풀어주는 밝은 사람·표정이 살아있는 얼굴에서 정서적 균형을 얻는다.`] },
+  { id: "partner_look_dom_wood_female", category: "partner_look", when: { dom_element: "wood", gender: "F" }, lines: [`木 편중의 여성 — 묵직하고 듬직한 인상, 어깨 넓고 키 큰 남성에게 끌리는 경향. 고양이상보단 부드러운 곰상·강아지상이 더 매력 있게 다가온다.`, `본인이 곧게 뻗는 결인 만큼, 안정감 있는 체격·얇지 않은 입술·또렷한 이목구비에서 신뢰감을 먼저 본다.`] },
+  { id: "partner_look_dom_metal_male", category: "partner_look", when: { dom_element: "metal", gender: "M" }, lines: [`金 편중의 남성 — 부드럽고 동그란 인상, 큰 눈에 살짝 통통한 볼, 강아지상의 여성에게 자연스럽게 끌리는 결. 시크한 외모보단 친근한 외모가 마음을 더 움직인다.`, `본인이 단단한 만큼, 잘 웃고 표정이 풍부한 사람·둥근 콧방울·도톰한 입술 같은 부드러운 디테일에서 매력을 느낀다.`] },
+  { id: "marriage_look_yukhap", category: "marriage_look", when: { has_yukhap: true }, lines: [`사주에 합이 있어 결혼 상대는 '편안한 인상'이 핵심 — 자극적인 미인형보단 둥글둥글한 윤곽에 안정적인 콧선, 처음부터 익숙한 얼굴이라는 느낌의 사람과 맺어지기 쉽다.`, `합의 기운 — 평범한 외모이나 자꾸 보고 싶어지는 인상, 무던한 듯 친근한 강아지상이나 곰상 같은 결의 사람과 가정을 이루는 결이다.`] },
+  { id: "marriage_look_chung_day", category: "marriage_look", when: { has_samhyeong: false }, lines: [`결혼 상대의 인상은 그대와 정반대 결일 가능성이 높다 — 그대가 차가운 고양이상이면 따뜻한 강아지상, 그대가 마르면 통통한 편, 그대가 키 크면 작은 편으로 균형이 맞춰진다.`, `사주의 결을 보완하는 외모의 사람과 맺어지는 경향. 닮은 듯 다른 — 사진을 같이 찍으면 어딘가 어울려 보이는 그런 인상이다.`] },
+  { id: "marriage_look_dom_earth", category: "marriage_look", when: { dom_element: "earth" }, lines: [`土 편중의 사주 — 결혼 상대는 다소 마르고 키가 큰, 활동적인 인상의 사람일 가능성이 크다. 또렷한 콧선과 갸름한 얼굴선의 외모에서 매력을 자주 본다.`, `흙이 많은 그대는 묵직한데, 배우자는 가볍고 동적인 외모(고양이상 또는 깔끔한 강아지상)를 가진 사람과 자연스럽게 맞춰지는 결이다.`] },
+  { id: "marriage_look_dom_metal", category: "marriage_look", when: { dom_element: "metal" }, lines: [`金 편중의 사주 — 결혼 상대는 부드럽고 따뜻한 인상, 둥근 얼굴선에 표정이 자주 바뀌는 강아지상이나 아기상의 사람일 가능성이 높다.`, `쇠가 많아 본인이 단호한 만큼, 잘 웃고 콧방울이 둥근, 친근한 분위기의 배우자가 그대를 풀어주는 결이다.`] },
+  { id: "marriage_look_dom_wood", category: "marriage_look", when: { dom_element: "wood" }, lines: [`木 편중의 사주 — 결혼 상대는 묵직하고 안정감 있는 체격, 둥근 콧방울·도톰한 입술 같은 푸근한 디테일을 가진 곰상·소상에 가까운 사람과 맺어지기 쉽다.`, `나무의 기운이 강하니, 자라는 그대를 받아주는 흙 같은 외모 — 단단하고 신뢰감 있는 얼굴선의 사람과 인연이 깊다.`] },
+  { id: "marriage_look_dom_fire", category: "marriage_look", when: { dom_element: "fire" }, lines: [`火 편중의 사주 — 결혼 상대는 차분한 인상, 깊은 눈매와 부드러운 콧선의 시크한 고양이상이나 지적인 분위기의 사람일 가능성이 높다.`, `불이 많은 그대를 식혀줄 — 얼굴에 굴곡이 적고 잔잔한 표정의, 흰 피부에 차분한 톤을 가진 배우자와 자연스럽게 균형이 맞는다.`] },
+  { id: "marriage_look_dom_water", category: "marriage_look", when: { dom_element: "water" }, lines: [`水 편중의 사주 — 결혼 상대는 밝고 표정 풍부한 인상, 짙은 눈썹·또렷한 입꼬리의 따뜻한 강아지상에 가까운 사람과 맺어지기 쉽다.`, `물이 깊은 그대에겐 환한 햇살 같은 외모 — 잘 웃는 입매와 동그란 눈, 친근한 얼굴선의 배우자가 평생의 빛이 된다.`] },
+  { id: "marriage_age_forward", category: "marriage_age", when: { forward: true }, lines: [`대운이 순행 — 시간이 갈수록 인연의 결이 또렷해진다. 아래 구간이 그 시기의 후보다.`, `순행하는 대운에서는 대체로 30대 초반에 결혼 가능성 높은 흐름이 자주 잡힌다.`] },
+  { id: "marriage_age_backward", category: "marriage_age", when: { forward: false }, lines: [`대운이 역행 — 늦은 결혼이 오히려 안정적인 결이다. 서두를수록 어긋날 수 있다.`, `역행 대운에서는 35세 이후에 무게 있는 인연이 자주 들어오는 경향이 있다.`] },
 ] as const;

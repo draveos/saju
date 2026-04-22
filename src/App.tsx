@@ -540,6 +540,7 @@ const App: React.FC = () => {
                             birthMonth: Number(form.month) || 0,
                             birthDay: Number(form.day) || 0,
                             birthHour: Number(form.hour) || 0,
+                            gender: (form.gender === 'F' ? 'F' : 'M') as 'M' | 'F',
                           })}
                         />
                         <div className="wonguk-grid fade-up stagger-2">
@@ -619,6 +620,7 @@ const App: React.FC = () => {
                             birthMonth: Number(form.month) || 0,
                             birthDay: Number(form.day) || 0,
                             birthHour: Number(form.hour) || 0,
+                            gender: (form.gender === 'F' ? 'F' : 'M') as 'M' | 'F',
                           };
                           const facts = buildFacts(narrCtx);
                           const seed = narrCtx.birthYear * 10000 + narrCtx.birthMonth * 100 + narrCtx.birthDay + 7;
@@ -626,30 +628,44 @@ const App: React.FC = () => {
                           return (
                             <div className="report-section fade-up stagger-6">
                               <span className="section-label">사주 리포트</span>
-                              <div className="report-grid">
+                              <div className="report-stack">
                                 {cards.map((c) => (
-                                  <div key={c.category} className={`report-card report-${c.category}`}>
-                                    <div className="report-head">
-                                      <span className="report-icon">{c.icon}</span>
-                                      <span className="report-title">{c.labelKr}</span>
+                                  <div key={c.category} className={`report-${c.category}`}>
+                                    <div className="report-divider">
+                                      <span className="report-divider-icon">{c.icon}</span>
+                                      {c.labelKr}
+                                      <span className="report-divider-icon">{c.icon}</span>
                                     </div>
-                                    {c.lines.map((ln, i) => (
-                                      <p key={i} className="report-line">{ln}</p>
-                                    ))}
-                                    {c.luckyAges && c.luckyAges.length > 0 && (
-                                      <div className="lucky-age-list">
-                                        {c.luckyAges.map((la, i) => (
-                                          <div key={i} className="lucky-age-item">
-                                            <span className="lucky-age-range">{la.ageStart}~{la.ageEnd}세</span>
-                                            <span className="lucky-age-kanji">{la.stemKr}{la.branchKr}</span>
-                                            <span className="lucky-age-reason">{la.reason}</span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                    {c.luckyAges && c.luckyAges.length === 0 && (
-                                      <p className="report-line report-line-muted">대운 8구간 중 뚜렷한 강세 구간은 없다.</p>
-                                    )}
+                                    <div className="report-card">
+                                      {c.lines.map((ln, i) => (
+                                        <p key={i} className="report-line">{ln}</p>
+                                      ))}
+                                      {c.luckyAges && c.luckyAges.length > 0 && (
+                                        <div className="lucky-age-list">
+                                          {c.luckyAges.map((la, i) => (
+                                            <div key={i} className="lucky-age-item">
+                                              <span className="lucky-age-range">{la.ageStart}~{la.ageEnd}세</span>
+                                              <span className="lucky-age-kanji">{la.stemKr}{la.branchKr}</span>
+                                              <span className="lucky-age-reason">{la.reason}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                      {c.luckyAges && c.luckyAges.length === 0 && (
+                                        <p className="report-line report-line-muted">대운 8구간 중 뚜렷한 강세 구간은 없다.</p>
+                                      )}
+                                      {c.marriageAges && c.marriageAges.length > 0 && (
+                                        <div className="lucky-age-list">
+                                          {c.marriageAges.map((ma, i) => (
+                                            <div key={i} className="lucky-age-item">
+                                              <span className="lucky-age-range">{ma.ageStart}~{ma.ageEnd}세</span>
+                                              <span className="lucky-age-kanji">{ma.stemKr}{ma.branchKr}</span>
+                                              <span className="lucky-age-reason">{ma.sipsin} 대운</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 ))}
                               </div>

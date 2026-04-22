@@ -30,6 +30,7 @@ export interface ComboWhen {
   has_samhap?: boolean;
   has_banghap?: boolean;
   has_ganhap?: boolean;
+  gender?: "M" | "F";
 }
 
 export interface ComboInsert {

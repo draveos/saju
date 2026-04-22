@@ -32,6 +32,7 @@ export interface NarrativeContext {
   birthMonth: number;
   birthDay: number;
   birthHour: number;
+  gender: "M" | "F";
 }
 
 export type FortuneMood =
@@ -115,6 +116,7 @@ export function buildFacts(ctx: NarrativeContext): ComboFacts {
     hasSamhap: !!detectSamhap(allBr),
     hasBanghap: !!detectBanghap(allBr),
     hasGanhap: hasGan,
+    gender: ctx.gender,
   };
 }
 
