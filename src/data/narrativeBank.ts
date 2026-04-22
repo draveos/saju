@@ -1,7 +1,7 @@
 // ⚠ AUTO-GENERATED from ~/.harness/saju/rulebook/narrative_bank.json
 // ⚠ DO NOT EDIT BY HAND. Run ~/.harness/saju/codegen/narrative_bank_to_ts.py to regenerate.
 
-export type NarrativeBankKey = "closing_final" | "closing_wisdom" | "daewoon_backward" | "daewoon_forward" | "element_balance" | "element_dom_earth" | "element_dom_fire" | "element_dom_metal" | "element_dom_water" | "element_dom_wood" | "element_lack_earth" | "element_lack_fire" | "element_lack_metal" | "element_lack_water" | "element_lack_wood" | "gongmang_hour" | "gongmang_month" | "gongmang_year" | "ji_chung" | "ji_hae" | "ji_jahyeong" | "ji_pa" | "ji_samhyeong" | "ji_sanghyeong" | "opening_no_name" | "opening_with_name" | "reading";
+export type NarrativeBankKey = "closing_final" | "closing_wisdom" | "daewoon_backward" | "daewoon_forward" | "element_balance" | "element_dom_earth" | "element_dom_fire" | "element_dom_metal" | "element_dom_water" | "element_dom_wood" | "element_lack_earth" | "element_lack_fire" | "element_lack_metal" | "element_lack_water" | "element_lack_wood" | "gongmang_hour" | "gongmang_month" | "gongmang_year" | "hap_banghap" | "hap_ganhap" | "hap_samhap" | "hap_yukhap" | "ji_chung" | "ji_hae" | "ji_jahyeong" | "ji_pa" | "ji_samhyeong" | "ji_sanghyeong" | "opening_no_name" | "opening_with_name" | "reading";
 
 export const NARRATIVE_BANK: Record<NarrativeBankKey, readonly string[]> = {
   closing_final: [
@@ -9,12 +9,14 @@ export const NARRATIVE_BANK: Record<NarrativeBankKey, readonly string[]> = {
     `자, 오늘의 풀이는 여기까지. 부디 편한 걸음으로 돌아가거라.`,
     `별무늬를 다 읽었으니, 이제 그대의 시간이다. 조심히 가거라.`,
     `... 남은 말은 별에 담아두었다. 필요할 때 다시 오너라.`,
+    `별이 그대를 바래다 줄 것이다. 가는 길이 부디 가벼우시길.`,
   ],
   closing_wisdom: [
     `허나 기억하라 — 명(命)은 하늘이 정하나 운(運)은 그대가 움직인다. 별이 가리키는 방향은 참고일 뿐, 걸음은 그대의 것이니라.`,
     `별무늬는 지도일 뿐, 길은 그대가 만든다. 내려놓을 것은 놓고, 쥐어야 할 것은 쥐어라.`,
     `사주는 하늘이 낸 씨앗이요, 꽃을 피우는 것은 그대의 물과 빛이니라. 매일이 그 결정이다.`,
     `하늘이 짠 옷감이 있더라도, 그것을 어떻게 두를지는 그대의 손이니. 가볍게 여기지 말라.`,
+    `별의 결을 알면 흔들림이 줄어든다. 다만 그 결을 핑계 삼아 멈추지는 말라.`,
   ],
   daewoon_backward: [
     `그대의 대운은 거슬러 흐른다. 과거를 되짚어야 할 때가 오느니라.`,
@@ -35,26 +37,31 @@ export const NARRATIVE_BANK: Record<NarrativeBankKey, readonly string[]> = {
     `土의 기운이 {count}으로 두텁구나. 넉넉함이 그대의 덕이나, 움직이지 못하는 무거움이 되지 않도록 하라.`,
     `흙의 기운이 {count}으로 쌓였다. 품는 힘이 크나, 변화를 받아들이는 틈도 남겨두어라.`,
     `土가 {count}으로 가득하다. 뿌리 깊은 안정이지만, 때로 새 바람이 필요하리라.`,
+    `{count}개의 土 — 묵직한 사주이니 고집이 그대의 가장 큰 적이 될 수 있다.`,
   ],
   element_dom_fire: [
     `火의 기운이 {count}으로 타오르는구나. 열기는 사람을 모으되, 자신을 태우기도 하느니라.`,
     `불꽃이 {count}으로 커졌다. 빛을 주는 자는 그늘에서 쉬는 법도 배워야 한다.`,
     `火가 {count}으로 넘친다. 감정의 파고가 높을 터이니, 물의 길을 곁에 두어라.`,
+    `{count}개의 火 — 타오르는 결이니 식힐 줄 아는 사람이 곁에 있어야 한다.`,
   ],
   element_dom_metal: [
     `金의 기운이 {count}으로 단단하구나. 원칙은 그대의 무기이나, 때로 부드러움이 더 멀리 간다.`,
     `쇠의 기운이 {count}으로 날카롭다. 베는 힘은 크나, 자신까지 베이지 않도록 조심하라.`,
     `金이 {count}으로 모였다. 결단이 빠르니 추진은 쉬우나, 돌아볼 여유를 남겨두어라.`,
+    `{count}개의 金 — 칼처럼 정확한 사주이니 부드러움이 곁에 있어야 사람을 잃지 않는다.`,
   ],
   element_dom_water: [
     `水의 기운이 {count}으로 깊구나. 지혜가 흐르되, 방향을 잃은 물은 모든 것을 적실 뿐이다.`,
     `물의 기운이 {count}으로 넘친다. 넓은 포용이 그대의 힘이나, 기준이 흐려지기도 쉬우리라.`,
     `水가 {count}으로 가득하다. 생각이 많은 만큼 결정을 미루는 버릇을 경계하라.`,
+    `{count}개의 水 — 깊이가 큰 사주이니 한 번씩 수면 위로 올라와 숨 쉬는 시간이 필요하다.`,
   ],
   element_dom_wood: [
     `木의 기운이 {count}으로 우거졌구나. 뿌리를 뻗는 것도 좋으나, 때로 가지를 치는 법을 잊지 말라.`,
     `나무의 힘이 {count}으로 차있다. 곧게 뻗는 자존심이 그대를 돕기도, 해치기도 하느니라.`,
     `木이 {count}으로 무성하다. 제 자리를 고집하다 바람을 놓치는 일이 있으리라.`,
+    `{count}개의 木 — 자라는 힘이 강하니 멈추지 않는 것이 미덕이자 부담이다.`,
   ],
   element_lack_earth: [
     `土의 자리가 비었구나. 뿌리내리는 자리와 약속을 의식해서 지켜야 하느니라.`,
@@ -96,6 +103,22 @@ export const NARRATIVE_BANK: Record<NarrativeBankKey, readonly string[]> = {
     `연지가 비어있구나. 배경의 덕보단 자신의 길을 내야 하는 사주다.`,
     `연주 공망 — 출신·가계의 힘이 희미하다. 하지만 비어있기에 더 자유롭다.`,
   ],
+  hap_banghap: [
+    `{hap_name} 방합이 있다. {season} 계절의 기운이 그대 사주에 밀어주는 바람이 되어준다.`,
+    `방합 {hap_name} — {produces}의 흐름이 강화되어 있다. 이 오행과 관련된 방향으로 길을 잡으면 이득이 크다.`,
+  ],
+  hap_ganhap: [
+    `{a}간과 {b}간이 간합하여 {produces}의 기운을 낸다. 내면의 결속·본질적 변화를 예고하는 축이다.`,
+    `{hap_name} — 두 천간이 녹아 하나가 되니, 정체성의 전환점이 오기 쉽다. 그 변화는 대부분 긍정적이다.`,
+  ],
+  hap_samhap: [
+    `{a}·{b}·{c} 삼합({hap_name})이 성립한다. 사회적 성취·집단의 흐름이 그대 편에 서는 큰 합이다.`,
+    `삼합 {hap_name} — 세 자리가 하나로 뭉쳐 {produces}의 큰 국을 이루었다. 시기가 맞으면 크게 풀리는 사주다.`,
+  ],
+  hap_yukhap: [
+    `{a}지와 {b}지가 합(合)하니, 두 자리의 기운이 서로 손잡고 {produces} 기운으로 흐른다. 관계·인연이 맺어지는 결이다.`,
+    `{a}-{b} 육합 — 보이지 않는 연결이 두 자리 사이에 흐른다. 협력·동업·연애의 축이 될 수 있다.`,
+  ],
   ji_chung: [
     `{a}지와 {b}지가 충(沖)한다. 두 자리 사이에 팽팽한 충돌이 서렸으니, 변동과 이별의 바람이 오가는 흐름이다.`,
     `{a}지와 {b}지의 충. 정면으로 부딪히는 기운이라, 자리가 바뀌거나 관계가 끊길 때가 있다.`,
@@ -128,17 +151,20 @@ export const NARRATIVE_BANK: Record<NarrativeBankKey, readonly string[]> = {
     `어서 오너라. 그대의 별이 오늘 내 앞에 멈추었다.`,
     `앉아라, 나그네여. 먼 길 돌아 여기 이르렀구나.`,
     `...어서 오거라. 하늘이 그대를 이쪽으로 돌려보냈구나.`,
+    `묻고 싶은 것이 있겠지. 자, 별부터 읽어보자.`,
   ],
   opening_with_name: [
     `...{name}이여, 마침내 왔는가.`,
     `{name}이여. 그대의 별이 오늘 내 앞에 멈추었다.`,
     `...{name}이라 하였지. 앉아라, 별을 읽을 시간이니라.`,
     `{name}이라. 그 이름 아래 움직이는 기운을 보겠노라.`,
+    `{name}이라는 이름의 별무늬 — 어디 한번 펼쳐보자.`,
   ],
   reading: [
     `내 앞에 그대의 별무늬가 펼쳐졌다. 천천히 읽어보겠노라.`,
     `여덟 기둥이 스스로 말한다. 귀 기울여 보자.`,
     `사주가 책처럼 열렸구나. 그 첫 장을 넘겨보자.`,
     `별들이 제자리를 찾았다. 이제 하나씩 풀어보겠다.`,
+    `여덟 글자가 그대의 모습을 그린다 — 그 윤곽을 따라가 보자.`,
   ],
 };

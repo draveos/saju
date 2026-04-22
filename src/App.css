@@ -414,6 +414,71 @@ body {
   .fortune-teller-dialogue { text-align: left; }
 }
 
+/* 사주 리포트 카드 */
+.report-section { margin-top: 28px; }
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.report-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.report-card:hover { border-color: rgba(201,168,76,0.35); background: rgba(255,255,255,0.035); }
+.report-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+  margin-bottom: 4px;
+}
+.report-icon {
+  font-size: 0.95rem;
+  color: var(--gold);
+  opacity: 0.85;
+}
+.report-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+.report-line {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text);
+  font-weight: 300;
+  margin: 0;
+  opacity: 0.9;
+}
+.report-line-muted { color: var(--text-dim); opacity: 0.7; font-style: italic; }
+.lucky-age-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.lucky-age-item {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 0.76rem;
+}
+.lucky-age-range { color: var(--gold); font-family: 'Cormorant Garamond', serif; min-width: 52px; }
+.lucky-age-kanji { color: var(--text); font-weight: 500; }
+.lucky-age-reason { color: var(--text-dim); opacity: 0.8; font-size: 0.72rem; }
+
 /* ─── Element bars ─── */
 .section-label {
   font-family: 'Cormorant Garamond', serif;

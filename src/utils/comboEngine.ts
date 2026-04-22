@@ -16,6 +16,10 @@ export interface ComboFacts {
   hasJahyeong: boolean;
   forward: boolean;
   currentDaewoonSipsin: string | null;
+  hasYukhap: boolean;
+  hasSamhap: boolean;
+  hasBanghap: boolean;
+  hasGanhap: boolean;
 }
 
 function checkCondition(key: keyof ComboWhen, expected: unknown, f: ComboFacts): boolean {
@@ -41,6 +45,10 @@ function checkCondition(key: keyof ComboWhen, expected: unknown, f: ComboFacts):
     case "has_jahyeong":      return f.hasJahyeong === expected;
     case "forward":           return f.forward === expected;
     case "current_daewoon_sipsin": return f.currentDaewoonSipsin === expected;
+    case "has_yukhap":    return f.hasYukhap === expected;
+    case "has_samhap":    return f.hasSamhap === expected;
+    case "has_banghap":   return f.hasBanghap === expected;
+    case "has_ganhap":    return f.hasGanhap === expected;
   }
 }
 

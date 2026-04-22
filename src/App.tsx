@@ -8,7 +8,8 @@ import {
 import { sinsalAt, sinsalDef } from './data/sinsal';
 import { unseongAt, unseongDef } from './data/unseong';
 import { isGongmang } from './data/gongmang';
-import { generateNarrative } from './utils/narrative';
+import { generateNarrative, buildFacts } from './utils/narrative';
+import { generateReport } from './utils/reportGenerator';
 import { FortuneTellerScene } from './components/FortuneTellerScene';
 
 type AppStep = 'intro' | 'input' | 'result';
@@ -602,6 +603,59 @@ const App: React.FC = () => {
                             ))}
                           </div>
                         </div>
+
+                        {/* 사주 리포트 카드 — 11 카테고리 */}
+                        {(() => {
+                          const narrCtx = {
+                            name: form.name,
+                            dayStemIdx: result.saju.dayStemIdx,
+                            pillars: result.saju.pillars,
+                            dayMasterKey: result.dm.key,
+                            counts: result.saju.counts,
+                            daewoon: result.daewoon,
+                            userAge: form.year ? (new Date().getFullYear() - Number(form.year)) : undefined,
+                            forward: result.saju.forward,
+                            birthYear: Number(form.year) || 0,
+                            birthMonth: Number(form.month) || 0,
+                            birthDay: Number(form.day) || 0,
+                            birthHour: Number(form.hour) || 0,
+                          };
+                          const facts = buildFacts(narrCtx);
+                          const seed = narrCtx.birthYear * 10000 + narrCtx.birthMonth * 100 + narrCtx.birthDay + 7;
+                          const cards = generateReport(facts, result.daewoon, seed);
+                          return (
+                            <div className="report-section fade-up stagger-6">
+                              <span className="section-label">사주 리포트</span>
+                              <div className="report-grid">
+                                {cards.map((c) => (
+                                  <div key={c.category} className={`report-card report-${c.category}`}>
+                                    <div className="report-head">
+                                      <span className="report-icon">{c.icon}</span>
+                                      <span className="report-title">{c.labelKr}</span>
+                                    </div>
+                                    {c.lines.map((ln, i) => (
+                                      <p key={i} className="report-line">{ln}</p>
+                                    ))}
+                                    {c.luckyAges && c.luckyAges.length > 0 && (
+                                      <div className="lucky-age-list">
+                                        {c.luckyAges.map((la, i) => (
+                                          <div key={i} className="lucky-age-item">
+                                            <span className="lucky-age-range">{la.ageStart}~{la.ageEnd}세</span>
+                                            <span className="lucky-age-kanji">{la.stemKr}{la.branchKr}</span>
+                                            <span className="lucky-age-reason">{la.reason}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {c.luckyAges && c.luckyAges.length === 0 && (
+                                      <p className="report-line report-line-muted">대운 8구간 중 뚜렷한 강세 구간은 없다.</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </>
                   ) : (
                       <div className={`quote-card fade-up stagger-2 ${gradeConf ? gradeConf.cssClass : ''}`}>

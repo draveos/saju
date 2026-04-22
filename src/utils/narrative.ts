@@ -6,6 +6,7 @@ import { sinsalAt, sinsalDef } from "../data/sinsal";
 import { unseongAt, unseongDef } from "../data/unseong";
 import { isGongmang } from "../data/gongmang";
 import { jiPairRelation, detectSamhyeong, detectJahyeong } from "../data/jiRelations";
+import { yukhapPair, ganhapPair, detectSamhap, detectBanghap } from "../data/hapRelations";
 import { iljuAt } from "../data/ilju60";
 import { NARRATIVE_BANK } from "../data/narrativeBank";
 import type { NarrativeBankKey } from "../data/narrativeBank";
@@ -59,7 +60,7 @@ const STEMS_KR = ["갑", "을", "병", "정", "무", "기", "경", "신", "임",
 const BRANCHES_KR = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
 const ELEMENT_KEYS = ["wood", "fire", "earth", "metal", "water"] as const;
 
-function buildFacts(ctx: NarrativeContext): ComboFacts {
+export function buildFacts(ctx: NarrativeContext): ComboFacts {
   const [yb, mb, hb] = [ctx.pillars.year[1], ctx.pillars.month[1], ctx.pillars.hour[1]];
   const [ds, db] = ctx.pillars.day;
   const dom = dominantElement(ctx.counts);
@@ -67,6 +68,22 @@ function buildFacts(ctx: NarrativeContext): ComboFacts {
   const dw = currentDaewoon(ctx);
 
   const allBr = [yb, mb, db, hb];
+  const allStems = [ctx.pillars.year[0], ctx.pillars.month[0], ds, ctx.pillars.hour[0]];
+
+  // 합 검출 (facts용)
+  let hasYuk = false;
+  const pairs: [number, number][] = [
+    [yb, mb], [yb, db], [yb, hb], [mb, db], [mb, hb], [db, hb],
+  ];
+  for (const [a, b] of pairs) if (yukhapPair(a, b)) { hasYuk = true; break; }
+
+  let hasGan = false;
+  for (let i = 0; i < allStems.length; i++) {
+    for (let j = i + 1; j < allStems.length; j++) {
+      if (ganhapPair(allStems[i], allStems[j])) { hasGan = true; break; }
+    }
+    if (hasGan) break;
+  }
 
   return {
     dayStem: ds,
@@ -94,6 +111,10 @@ function buildFacts(ctx: NarrativeContext): ComboFacts {
     hasJahyeong: detectJahyeong(allBr) !== null,
     forward: ctx.forward,
     currentDaewoonSipsin: dw ? getSipsin(ds, dw.s) : null,
+    hasYukhap: hasYuk,
+    hasSamhap: !!detectSamhap(allBr),
+    hasBanghap: !!detectBanghap(allBr),
+    hasGanhap: hasGan,
   };
 }
 
@@ -297,6 +318,69 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
   jiEvents.sort((a, b) => a.priority - b.priority);
   for (const ev of jiEvents.slice(0, 2)) {
     lines.push({ text: ev.text, mood: "warning" });
+  }
+
+  // 6c-2. 합(合) 관계 — 긍정 톤, 형충파해와 대칭
+  const hapEvents: Array<{ text: string; priority: number }> = [];
+
+  // 삼합 (우선순위 최상)
+  const sh = detectSamhap(allBr);
+  if (sh) {
+    hapEvents.push({
+      priority: 0,
+      text: fill(pick("hap_samhap", p), {
+        a: BRANCHES_KR[sh.branches[0]],
+        b: BRANCHES_KR[sh.branches[1]],
+        c: BRANCHES_KR[sh.branches[2]],
+        hap_name: sh.nameKr,
+        produces: sh.produces,
+      }),
+    });
+  }
+  // 방합
+  const bh = detectBanghap(allBr);
+  if (bh) {
+    hapEvents.push({
+      priority: 1,
+      text: fill(pick("hap_banghap", p), {
+        hap_name: bh.nameKr,
+        season: bh.seasonKr,
+        produces: bh.produces,
+      }),
+    });
+  }
+  // 육합 pair 검출 (4주 중)
+  for (const [posA, posB, brA, brB] of pillarPairs) {
+    const yh = yukhapPair(brA, brB);
+    if (!yh) continue;
+    hapEvents.push({
+      priority: 2,
+      text: fill(pick("hap_yukhap", p), {
+        a: posA, b: posB, produces: yh.produces,
+      }),
+    });
+  }
+  // 간합 (일간-월간/시간 등)
+  const allStems = [
+    { pos: "연간", stem: ctx.pillars.year[0] },
+    { pos: "월간", stem: ctx.pillars.month[0] },
+    { pos: "시간", stem: ctx.pillars.hour[0] },
+  ];
+  for (const { pos, stem } of allStems) {
+    const gh = ganhapPair(ds, stem);
+    if (!gh || stem === ds) continue;
+    hapEvents.push({
+      priority: 3,
+      text: fill(pick("hap_ganhap", p), {
+        a: "일간", b: pos, produces: gh.produces, hap_name: gh.nameKr,
+      }),
+    });
+    break; // 한 번만
+  }
+
+  hapEvents.sort((a, b) => a.priority - b.priority);
+  for (const ev of hapEvents.slice(0, 2)) {
+    lines.push({ text: ev.text, mood: "encouraging" });
   }
 
   // 6d. main section combos (최대 2) — 개인화된 맞춤 대사
