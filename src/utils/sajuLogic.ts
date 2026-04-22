@@ -1,5 +1,7 @@
 // src/utils/sajuLogic.ts
 
+import { resolveMonthYear } from "../data/jeolgi";
+
 export const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
 export const STEMS_KR = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
 export const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
@@ -10,14 +12,9 @@ export const ELEM_COLORS = ["#4ade80", "#f87171", "#fbbf24", "#94a3b8", "#60a5fa
 const STEM_E = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4];
 const BRANCH_E = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
 
-const JEOLGI_MO = [[1,6],[2,4],[3,6],[4,5],[5,6],[6,6],[7,7],[8,7],[9,8],[10,8],[11,7],[12,7]];
-const JEOLGI_BR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0];
-
-// 2000-01-01 = 戊午일 (한국천문연구원/만세력 기준). 과거 庚辰로 하드코딩되어 모든 일주가 38일 어긋나있었음.
-// UTC 기준으로 통일해서 historical DST(예: 한국 1948-1951, 1987-88) 영향 회피.
-const REF_UTC_MS = Date.UTC(2000, 0, 1);
-const REF_STEM = 4; // 戊
-const REF_BRANCH = 6; // 午
+// KST (UTC+9) 고정. 경도보정(-30분)은 미적용 (표준 사주 관행).
+// 일주 기준일: 2000-01-01 00:00 KST = 戊午일.
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 export const getSeededRandom = (seed: number) => {
     let s = seed;
@@ -43,27 +40,23 @@ export const getSipsin = (dayStemIdx: number, otherStemIdx: number): string => {
 };
 
 export const calcSaju = (y: number, m: number, d: number, h: number, gender: string) => {
-    const birthUtcMs = Date.UTC(y, m - 1, d);
+    // KST 입력 → UTC ms (경도보정 없음)
+    const birthUtcMs = Date.UTC(y, m - 1, d, h, 0, 0) - KST_OFFSET_MS;
+    // 일주 기준: 일자 자정 (시각 무관)
+    const birthDayUtcMs = Date.UTC(y, m - 1, d, 0, 0, 0) - KST_OFFSET_MS;
 
-    // 연주
-    const sajuYear = (m < 2 || (m === 2 && d < 4)) ? y - 1 : y;
+    // 연주·월주: 절기 테이블 기반 (100년치 실 천문 시각)
+    const { branch: mbIdx, sajuYear } = resolveMonthYear(birthUtcMs);
     const ys = ((sajuYear - 4) % 10 + 10) % 10;
     const yb = ((sajuYear - 4) % 12 + 12) % 12;
-
-    // 월주
-    let mbIdx = 0;
-    for (let i = 11; i >= 0; i--) {
-        const [jm, jd] = JEOLGI_MO[i];
-        if (m > jm || (m === jm && d >= jd)) {
-            mbIdx = JEOLGI_BR[i];
-            break;
-        }
-    }
     const msBase = [2, 4, 6, 8, 0][ys % 5];
     const ms = (msBase + (mbIdx - 2 + 12) % 12) % 10;
 
-    // 일주
-    const diffDays = Math.floor((birthUtcMs - REF_UTC_MS) / (1000 * 60 * 60 * 24)) + (h === 23 ? 1 : 0);
+    // 일주: 2000-01-01 00:00 KST 기준 일수 차이
+    const refDayUtcMs = Date.UTC(2000, 0, 1, 0, 0, 0) - KST_OFFSET_MS;
+    const diffDays = Math.floor((birthDayUtcMs - refDayUtcMs) / (1000 * 60 * 60 * 24)) + (h === 23 ? 1 : 0);
+    const REF_STEM = 4; // 戊
+    const REF_BRANCH = 6; // 午
     const ds = ((REF_STEM + (diffDays % 10)) % 10 + 10) % 10;
     const db = ((REF_BRANCH + (diffDays % 12)) % 12 + 12) % 12;
 

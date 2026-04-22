@@ -530,6 +530,10 @@ const App: React.FC = () => {
                             daewoon: result.daewoon,
                             userAge: form.year ? (new Date().getFullYear() - Number(form.year)) : undefined,
                             forward: result.saju.forward,
+                            birthYear: Number(form.year) || 0,
+                            birthMonth: Number(form.month) || 0,
+                            birthDay: Number(form.day) || 0,
+                            birthHour: Number(form.hour) || 0,
                           })}
                         />
                         <div className="wonguk-grid fade-up stagger-2">

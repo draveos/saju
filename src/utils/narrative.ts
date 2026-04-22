@@ -1,9 +1,12 @@
 // 점쟁이 서사 생성. 엔진 출력 → 대사 라인.
-// deterministic template 기반. 추후 LLM 연동시 이 인터페이스만 유지하고 구현 교체.
+// 생년월일시 seeded random으로 bank에서 variation 선택 (같은 사람 = 같은 결과).
+// 추후 LLM 연동시 이 인터페이스만 유지하고 구현 교체.
 
 import { sinsalAt, sinsalDef } from "../data/sinsal";
 import { unseongAt, unseongDef } from "../data/unseong";
-import { getSipsin } from "./sajuLogic";
+import { NARRATIVE_BANK } from "../data/narrativeBank";
+import type { NarrativeBankKey } from "../data/narrativeBank";
+import { getSipsin, getSeededRandom } from "./sajuLogic";
 
 export interface NarrativeContext {
   name?: string;
@@ -14,11 +17,15 @@ export interface NarrativeContext {
     day: [number, number];
     hour: [number, number];
   };
-  dayMasterKey: string;   // DAY_MASTER_DATA[i].key (e.g. "갑목(甲木) — 큰 나무")
-  counts: number[];       // 오행 분포 5개
+  dayMasterKey: string;
+  counts: number[];
   daewoon: { s: number; br: number; age_s: number }[];
   userAge?: number;
   forward: boolean;
+  birthYear: number;
+  birthMonth: number;
+  birthDay: number;
+  birthHour: number;
 }
 
 export type FortuneMood =
@@ -35,7 +42,6 @@ export interface NarrativeLine {
   mood?: FortuneMood;
 }
 
-// 신살별 톤 (encouraging / warning / neutral → insight)
 const SINSAL_TONE: Record<string, FortuneMood> = {
   gyeopsal: "warning", jaesal: "warning", cheonsal: "warning",
   wolsal: "warning", mangsinsal: "warning", yukhaesal: "warning",
@@ -46,13 +52,7 @@ const SINSAL_TONE: Record<string, FortuneMood> = {
 
 const STEMS_KR = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
 const BRANCHES_KR = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
-const ELEMENTS = ["木", "火", "土", "金", "水"];
-const ELEMENT_KR = ["목", "화", "토", "금", "수"];
-
-const addr = (name?: string) => {
-  if (name && name.trim()) return `${name.trim()}이여`;
-  return "그대여";
-};
+const ELEMENT_KEYS = ["wood", "fire", "earth", "metal", "water"] as const;
 
 function dominantElement(counts: number[]): { idx: number; count: number } {
   let maxI = 0;
@@ -74,6 +74,20 @@ function currentDaewoon(ctx: NarrativeContext) {
   return ctx.daewoon[0];
 }
 
+// seeded random picker factory
+function makePicker(seed: number) {
+  const rng = getSeededRandom(seed);
+  return <T>(arr: readonly T[]): T => arr[Math.floor(rng() * arr.length)];
+}
+
+function fill(template: string, vars: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
+}
+
+function pick(key: NarrativeBankKey, picker: <T>(a: readonly T[]) => T): string {
+  return picker(NARRATIVE_BANK[key]);
+}
+
 export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
   const lines: NarrativeLine[] = [];
   const yb = ctx.pillars.year[1];
@@ -88,11 +102,27 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
   const dom = dominantElement(ctx.counts);
   const weak = weakestElement(ctx.counts);
 
-  // 1. Opening
-  lines.push({ text: `...${addr(ctx.name)}, 드디어 왔는가.`, pauseAfterMs: 500, mood: "welcome" });
-  lines.push({ text: `내 앞에 그대의 별무늬가 펼쳐졌다. 천천히 읽어보겠노라.`, pauseAfterMs: 600, mood: "reading" });
+  // seed: 생년월일시 (같은 사람은 같은 결과, 다른 사람은 다름)
+  const seed = ctx.birthYear * 100_000_000 + ctx.birthMonth * 1_000_000
+             + ctx.birthDay * 10_000 + ctx.birthHour * 100 + 1;
+  const p = makePicker(seed);
 
-  // 2. 일간 소개
+  // 1. Opening
+  const hasName = !!(ctx.name && ctx.name.trim());
+  const openTpl = hasName ? pick("opening_with_name", p) : pick("opening_no_name", p);
+  lines.push({
+    text: fill(openTpl, { name: ctx.name?.trim() ?? "" }),
+    pauseAfterMs: 500,
+    mood: "welcome",
+  });
+
+  lines.push({
+    text: pick("reading", p),
+    pauseAfterMs: 600,
+    mood: "reading",
+  });
+
+  // 2. 일간 소개 (DAY_MASTER_DATA 기반 — bank 없이 직접 문장)
   lines.push({
     text: `그대의 본질은 ${ctx.dayMasterKey.split("—")[0].trim()}. ` +
           `${ctx.dayMasterKey.split("—")[1]?.trim() ?? ""}의 성정이니라.`,
@@ -100,27 +130,21 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
     mood: "insight",
   });
 
-  // 3. 오행 편중
+  // 3. 오행 편중/결핍/균형 — bank에서 pick
   if (dom.count >= 4) {
+    const key = `element_dom_${ELEMENT_KEYS[dom.idx]}` as NarrativeBankKey;
     lines.push({
-      text: `${ELEMENTS[dom.idx]}의 기운이 ${dom.count}으로 넘치는구나. ` +
-            `${ELEMENT_KR[dom.idx]} 기운이 지나치면 오히려 탈이 된다는 걸 잊지 말라.`,
+      text: fill(pick(key, p), { count: dom.count }),
       mood: "warning",
     });
   } else if (weak.count === 0) {
-    lines.push({
-      text: `허나 ${ELEMENTS[weak.idx]}의 자리가 비었구나. ` +
-            `${ELEMENT_KR[weak.idx]}을(를) 보충하는 방향을 찾아야 하느니라.`,
-      mood: "warning",
-    });
+    const key = `element_lack_${ELEMENT_KEYS[weak.idx]}` as NarrativeBankKey;
+    lines.push({ text: pick(key, p), mood: "warning" });
   } else {
-    lines.push({
-      text: `오행이 고루 흐르니 큰 재앙은 없겠노라. 다만 ${ELEMENTS[dom.idx]}의 기운이 약간 강하다.`,
-      mood: "insight",
-    });
+    lines.push({ text: pick("element_balance", p), mood: "insight" });
   }
 
-  // 4. 일주 (일간 + 일지)
+  // 4. 일주 — 운성 theme 동적
   lines.push({
     text: `일주는 ${dayStemKr}${dayBranchKr}. ` +
           `일지 ${dayBranchKr}에는 ${dayUnseong.nameKr}의 운성이 서렸으니 — ${dayUnseong.theme}의 별이다.`,
@@ -128,13 +152,13 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
     mood: "insight",
   });
 
-  // 5. 일지 신살 — 신살 톤에 따라 mood 결정
+  // 5. 일지 신살
   lines.push({
     text: `년지로 비추어 보건대, 일지에 맺힌 신살은 ${daySinsal.nameKr}. 이는 ${daySinsal.theme}을(를) 뜻한다.`,
     mood: SINSAL_TONE[daySinsal.key] ?? "insight",
   });
 
-  // 6. 시주 (hint)
+  // 6. 시주
   lines.push({
     text: `태어난 시의 지지에는 ${hourUnseong.nameKr}의 기운이 담겼으니, 인생 후반부의 결이 그러하다.`,
     pauseAfterMs: 400,
@@ -155,23 +179,20 @@ export function generateNarrative(ctx: NarrativeContext): NarrativeLine[] {
     });
   }
 
-  // 8. 방향 (대운 순/역)
+  // 8. 대운 방향 — bank
   lines.push({
-    text: ctx.forward
-      ? `그대의 대운은 앞으로 나아간다. 시간이 그대의 편에 설 때가 있느니라.`
-      : `그대의 대운은 거슬러 흐른다. 과거를 되짚어야 할 때가 오느니라.`,
+    text: pick(ctx.forward ? "daewoon_forward" : "daewoon_backward", p),
     pauseAfterMs: 500,
     mood: ctx.forward ? "encouraging" : "warning",
   });
 
-  // 9. Closing
+  // 9. Closing — bank
   lines.push({
-    text: `허나 기억하라 — 명(命)은 하늘이 정하나 운(運)은 그대가 움직인다. ` +
-          `별이 가리키는 방향은 참고일 뿐, 걸음은 그대의 것이니라.`,
+    text: pick("closing_wisdom", p),
     pauseAfterMs: 700,
     mood: "closing",
   });
-  lines.push({ text: `... 이것으로 오늘의 풀이를 마치겠노라.`, mood: "closing" });
+  lines.push({ text: pick("closing_final", p), mood: "closing" });
 
   return lines;
 }
