@@ -124,7 +124,22 @@ export function generateReport(
       return { category: cat.key, labelKr: cat.labelKr, icon: cat.icon, lines, marriageAges: mages };
     }
     const matched = byCat.get(cat.key) ?? [];
-    const lines = matched.length > 0 ? matched.slice(0, 2) : [pick(REPORT_FALLBACKS[cat.key])];
+    // 매칭된 rule이 많으면 여러 문단 이어붙여 PDF 스타일로 풍부화. fallback도 2개 pick해 합침.
+    let lines: string[];
+    if (matched.length > 0) {
+      lines = matched.slice(0, 3);
+    } else {
+      const fbPool = REPORT_FALLBACKS[cat.key];
+      if (fbPool.length >= 2) {
+        // seed로 2개 고르되 중복 없이
+        const idx1 = Math.floor(rng() * fbPool.length);
+        let idx2 = Math.floor(rng() * fbPool.length);
+        if (idx2 === idx1) idx2 = (idx2 + 1) % fbPool.length;
+        lines = [fbPool[idx1], fbPool[idx2]];
+      } else {
+        lines = [pick(fbPool)];
+      }
+    }
     return { category: cat.key, labelKr: cat.labelKr, icon: cat.icon, lines };
   });
 }

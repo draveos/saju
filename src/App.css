@@ -605,6 +605,9 @@ body {
 .report-divider-icon {
   font-size: 1rem;
   opacity: 0.9;
+  font-family: 'Noto Serif KR', 'Cormorant Garamond', serif;
+  min-width: 1.2em;
+  text-align: center;
 }
 
 .report-card {
@@ -669,6 +672,14 @@ body {
 .report-partner_look  { --cat-color: #f0a8c4; }  /* 옅은 분홍 */
 .report-marriage_look { --cat-color: #c4a8e0; }  /* 옅은 보라 */
 .report-marriage_age  { --cat-color: #f0d878; }  /* 황금 */
+/* 새 카테고리 */
+.report-innate_nature     { --cat-color: #e8d898; }   /* 따뜻한 베이지 */
+.report-early_life        { --cat-color: #a8d89a; }   /* 연두 (새싹) */
+.report-mid_life          { --cat-color: #70ae88; }   /* 짙은 녹 (나무) */
+.report-late_life         { --cat-color: #d8b878; }   /* 황갈 (곡물) */
+.report-constitution      { --cat-color: #98c4c8; }   /* 옥색 (몸) */
+.report-wealth_method     { --cat-color: #d4b860; }   /* 진한 금 */
+.report-wealth_prevention { --cat-color: #c88868; }   /* 구리빛 (방어) */
 
 /* ─── Fortune Grade FX ─── */
 .fx-particles {
