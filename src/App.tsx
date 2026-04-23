@@ -14,6 +14,9 @@ import { FortuneTellerScene } from './components/FortuneTellerScene';
 import { FortuneGradeFX } from './components/FortuneGradeFX';
 import { CookieCrack } from './components/CookieCrack';
 import { QuoteAvatar } from './components/QuoteAvatar';
+import { CurseLayer } from './components/CurseLayer';
+import { LockoutModal } from './components/LockoutModal';
+import { Toast } from './components/Toast';
 
 type AppStep = 'intro' | 'input' | 'result';
 
@@ -389,6 +392,22 @@ const App: React.FC = () => {
     } else if (menuId === 3) {
       const c = data.fortune_cookies[Math.floor(rng() * data.fortune_cookies.length)];
       res = { type:'cookie', title:'포춘쿠키의 조언', content:c.message, detail:`Lucky: ${c.lucky_numbers.join('  ·  ')}` };
+    } else if (menuId === 5) {
+      // All in One — 세 가지 동시에. 각자 독립 seed로 뽑음 (겹치지 않게 offset).
+      const rngF = getSeededRandom(getDailySeed(2 * 97));
+      const rngC = getSeededRandom(getDailySeed(3 * 97));
+      const rngQ = getSeededRandom(getDailySeed(4 * 97));
+      const f = data.general_fortunes[Math.floor(rngF() * data.general_fortunes.length)];
+      const c = data.fortune_cookies[Math.floor(rngC() * data.fortune_cookies.length)];
+      const q = data.quotes[Math.floor(rngQ() * data.quotes.length)];
+      res = {
+        type: 'all_in_one',
+        title: '오늘의 모든 운',
+        dateLabel,
+        fortune: { grade: f.grade, message: f.message, detail: f.detail },
+        cookie:  { message: c.message, detail: `Lucky: ${c.lucky_numbers.join('  ·  ')}` },
+        quote:   { author: q.author, text: q.text },
+      };
     } else {
       const q = data.quotes[Math.floor(rng() * data.quotes.length)];
       res = { type:'quote', title:q.author, content:q.text };
@@ -408,6 +427,130 @@ const App: React.FC = () => {
 
 
   const [smashing, setSmashing] = useState(false);
+
+  // Toast (복사·알림용)
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 2200);
+    return () => window.clearTimeout(t);
+  }, [toast]);
+
+  const copyAllInOne = async () => {
+    if (!result || result.type !== 'all_in_one') return;
+    const lines: string[] = [];
+    if (result.dateLabel) lines.push(`· ${result.dateLabel} ·`, '');
+    lines.push('✦ 오늘의 운세');
+    if (result.fortune.grade) lines.push(`[${result.fortune.grade}] ${result.fortune.message}`);
+    else lines.push(result.fortune.message);
+    if (result.fortune.detail) lines.push(result.fortune.detail);
+    lines.push('');
+    lines.push('🥠 신비로운 포춘쿠키');
+    lines.push(result.cookie.message);
+    if (result.cookie.detail) lines.push(result.cookie.detail);
+    lines.push('');
+    lines.push('◈ 오늘의 명언');
+    lines.push(`"${result.quote.text}"`);
+    lines.push(`— ${result.quote.author}`);
+    lines.push('', '— draveos.github.io/saju');
+    const text = lines.join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      setToast('복사되었습니다!');
+    } catch {
+      setToast('복사에 실패했어요. 브라우저 권한을 확인해 주세요.');
+    }
+  };
+
+  // ─── 욕하기 기능 ───
+  const readCurseState = (): { count: number; lockUntil: number | null } => {
+    try {
+      const lockV = localStorage.getItem('curse_lock_until');
+      const ts = lockV ? Number(lockV) : null;
+      if (ts && ts > Date.now()) {
+        const v = localStorage.getItem('curse_count');
+        return { count: v ? Number(v) : 0, lockUntil: ts };
+      }
+      // 이미 지난 lock은 제거하고 카운트도 reset
+      if (ts) {
+        localStorage.removeItem('curse_lock_until');
+        localStorage.setItem('curse_count', '0');
+      }
+      const v = localStorage.getItem('curse_count');
+      return { count: v ? Number(v) : 0, lockUntil: null };
+    } catch { return { count: 0, lockUntil: null }; }
+  };
+  const initialCurse = readCurseState();
+
+  const [curseCount, setCurseCount] = useState<number>(initialCurse.count);
+  const [curseLockUntil, setCurseLockUntil] = useState<number | null>(initialCurse.lockUntil);
+  const [curseProjectiles, setCurseProjectiles] = useState<Array<{ id: number; symbol: string; x: number; y: number; dx: number; dy: number }>>([]);
+  const [isShaking, setIsShaking] = useState(false);
+
+  const isLocked = curseLockUntil != null && curseLockUntil > Date.now();
+
+  useEffect(() => {
+    try { localStorage.setItem('curse_count', String(curseCount)); } catch {}
+  }, [curseCount]);
+
+  // 200 도달 시 다음 자정까지 lock
+  useEffect(() => {
+    if (curseCount >= 200 && !curseLockUntil) {
+      const d = new Date();
+      d.setHours(24, 0, 0, 0);  // 다음 자정 00:00
+      const ts = d.getTime();
+      setCurseLockUntil(ts);
+      try { localStorage.setItem('curse_lock_until', String(ts)); } catch {}
+    }
+  }, [curseCount, curseLockUntil]);
+
+  // 자정 경과 시 자동 unlock
+  useEffect(() => {
+    if (!curseLockUntil) return;
+    const check = () => {
+      if (Date.now() >= curseLockUntil) {
+        setCurseLockUntil(null);
+        setCurseCount(0);
+        try {
+          localStorage.removeItem('curse_lock_until');
+          localStorage.setItem('curse_count', '0');
+        } catch {}
+      }
+    };
+    const i = setInterval(check, 1000);
+    return () => clearInterval(i);
+  }, [curseLockUntil]);
+
+  const CURSE_SYMBOLS = ['※','☠','‽','⚠','凸','#','@','$','%','&','*','!','?','¢','×','✖','✗'];
+
+  const throwCurse = () => {
+    if (isLocked) return;
+    const symbol = CURSE_SYMBOLS[Math.floor(Math.random() * CURSE_SYMBOLS.length)];
+    const id = Date.now() + Math.random();
+    const startX = window.innerWidth - 60 - Math.random() * 20;
+    const startY = window.innerHeight - 60 - Math.random() * 20;
+    // character 대략 상단 중앙
+    const targetX = window.innerWidth / 2 + (Math.random() - 0.5) * 70;
+    const targetY = 150;
+    setCurseProjectiles((p) => [...p, { id, symbol, x: startX, y: startY, dx: targetX - startX, dy: targetY - startY }]);
+    setCurseCount((c) => c + 1);
+    // 캐릭터에 조금 딜레이 두고 충격 (포물선 도착 시점 근처)
+    setTimeout(() => setIsShaking(true), 620);
+    setTimeout(() => setIsShaking(false), 1040);
+    setTimeout(() => setCurseProjectiles((p) => p.filter((x) => x.id !== id)), 900);
+  };
+
+  const getGreeting = (count: number, locked: boolean): string => {
+    if (locked)       return "오늘은 푹 쉬세요..\n화는 건강에 안 좋아요.";
+    if (count >= 120) return "...(말없이 옆에 앉음)";
+    if (count >= 75)  return "후..숨 한 번 쉬고 가세요. 별이 도망갈지도 몰라요.";
+    if (count >= 50)  return "...괜찮아요, 풀리는 날까지 여기 있을게요.";
+    if (count >= 35)  return "저..저도 노력하고 있는데... 조금만 살살...";
+    if (count >= 20)  return "죄..죄송해요. 다음엔 분명 좋은 운세가 나올 거예요..ㅠㅠ";
+    if (count >= 10)  return "호..혹시 운세가 안 좋게 나왔나요..?";
+    if (count >= 5)   return "많이 힘드신 하루를 보내셨나 보네요...";
+    return "안녕하세요.\n오늘도 와주셨네요.";
+  };
 
   const handleSmash = () => {
     if (smashing) return;
@@ -445,10 +588,19 @@ const App: React.FC = () => {
   return (
       <div className="container">
         <div className="starfield" />
+        <CurseLayer
+          active={step === 'intro'}
+          disabled={isLocked}
+          count={curseCount}
+          projectiles={curseProjectiles}
+          onThrow={throwCurse}
+        />
+        <LockoutModal until={curseLockUntil} />
+        <Toast message={toast} variant={toast?.startsWith('복사되') ? 'success' : 'error'} />
         <div className="capture-area">
 
           {/* Character */}
-          <div className={`character-wrap fade-in ${smashing ? 'smashing-char' : ''}`}>
+          <div className={`character-wrap fade-in ${smashing ? 'smashing-char' : ''} ${isShaking ? 'shaking' : ''}`}>
             <div className="character-ring" />
             <img src={`${import.meta.env.BASE_URL}front_character.png`} className="character-img" alt="Fortune Teller" />
             <span className="character-label">Celestial Oracle</span>
@@ -462,7 +614,12 @@ const App: React.FC = () => {
             {step === 'intro' && (
                 <>
                   <p className="main-text fade-up stagger-1">
-                    안녕하세요.<br />오늘도 와주셨네요.
+                    {getGreeting(curseCount, isLocked).split('\n').map((ln, i, arr) => (
+                      <React.Fragment key={i}>
+                        {ln}
+                        {i < arr.length - 1 && <br />}
+                      </React.Fragment>
+                    ))}
                   </p>
                   <div className="menu-list">
                     {[
@@ -470,8 +627,10 @@ const App: React.FC = () => {
                       { id:2, icon:'✦', label:'오늘의 전체 운세' },
                       { id:3, icon:'🥠', label:'신비로운 포춘쿠키' },
                       { id:4, icon:'◈', label:'오늘의 명언' },
+                      { id:5, icon:'⊛', label:'All in One — 세 가지 한눈에' },
                     ].map((item, i) => (
                         <button key={item.id} className={`btn-menu fade-up stagger-${i+2}`}
+                                disabled={isLocked}
                                 onClick={() => handleMenuSelect(item.id)}>
                           <span className="menu-num">0{item.id}</span>
                           <span className="menu-main">
@@ -683,6 +842,76 @@ const App: React.FC = () => {
                           );
                         })()}
                       </>
+                  ) : result.type === 'all_in_one' ? (
+                      <>
+                        {result.fortune?.grade && (
+                            <FortuneGradeFX grade={result.fortune.grade} />
+                        )}
+                        {result.dateLabel && <div className="date-label date-label-centered">{result.dateLabel}</div>}
+
+                        {/* 1. 오늘의 운세 */}
+                        {(() => {
+                          const fGrade = result.fortune.grade;
+                          const fConf = fGrade ? GRADE_CONFIG[fGrade] : null;
+                          return (
+                            <div className="all-section">
+                              <div className="all-divider">
+                                <span className="all-divider-ico">✦</span>
+                                오늘의 운세
+                                <span className="all-divider-ico">✦</span>
+                              </div>
+                              <div className={`quote-card fade-up ${fConf ? fConf.cssClass : ''}`}>
+                                {fConf && (
+                                  <div className={`grade-badge ${fConf.cssClass}`}>
+                                    <span className="grade-emoji">{fConf.emoji}</span>
+                                    <div className="grade-text">
+                                      <span className="grade-kr">{fGrade}</span>
+                                      <span className="grade-en">{fConf.label}</span>
+                                    </div>
+                                    <span className="grade-desc-tag">{fConf.desc}</span>
+                                  </div>
+                                )}
+                                <p className="quote-text">{result.fortune.message}</p>
+                                {result.fortune.detail && (
+                                  <>
+                                    <div className="divider"><span className="divider-icon">✦</span></div>
+                                    <p className="quote-detail">{result.fortune.detail}</p>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* 2. 포춘쿠키 */}
+                        <div className="all-section">
+                          <div className="all-divider">
+                            <span className="all-divider-ico">🥠</span>
+                            신비로운 포춘쿠키
+                            <span className="all-divider-ico">🥠</span>
+                          </div>
+                          <div className="quote-card fade-up">
+                            <CookieCrack message={result.cookie.message} detail={result.cookie.detail} />
+                          </div>
+                        </div>
+
+                        {/* 3. 오늘의 명언 */}
+                        <div className="all-section">
+                          <div className="all-divider">
+                            <span className="all-divider-ico">◈</span>
+                            오늘의 명언
+                            <span className="all-divider-ico">◈</span>
+                          </div>
+                          <div className="quote-card fade-up">
+                            <QuoteAvatar author={result.quote.author} text={result.quote.text} />
+                          </div>
+                        </div>
+
+                        <div className="daily-refresh-notice all-refresh-notice">
+                          <span className="refresh-icon">↻</span>
+                          {getTomorrowLabel()} 이후 새로운 결과가 열립니다
+                        </div>
+                      </>
                   ) : (
                       <>
                         {result.type === 'fortune' && result.grade && (
@@ -731,7 +960,11 @@ const App: React.FC = () => {
 
         {step === 'result' && (
             <div className={`action-group fade-up ${smashing ? 'smashing' : ''}`}>
-              <button className="btn-save" onClick={openSavePage}>리포트 저장</button>
+              {result?.type === 'all_in_one' ? (
+                  <button className="btn-save" onClick={copyAllInOne}>전체 복사하기</button>
+              ) : (
+                  <button className="btn-save" onClick={openSavePage}>리포트 저장</button>
+              )}
               <button className="btn-reset" onClick={() => { setStep('intro'); setResult(null); }}>처음으로</button>
               <button className="btn-smash" onClick={handleSmash} title="다 날려버리기">💥</button>
             </div>
