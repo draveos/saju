@@ -142,8 +142,6 @@ MIT — 자유롭게 포크·수정·배포하셔도 좋습니다. 다만 사주
 
 <div align="center">
 
-_명(命)은 하늘이 정하나, 운(運)은 그대가 움직입니다._
-
-Made with 🌟 by [draveos](https://github.com/draveos)
+_오늘도 좋은 하루 보내시길!_
 
 </div>
