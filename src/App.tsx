@@ -11,6 +11,9 @@ import { isGongmang } from './data/gongmang';
 import { generateNarrative, buildFacts } from './utils/narrative';
 import { generateReport } from './utils/reportGenerator';
 import { FortuneTellerScene } from './components/FortuneTellerScene';
+import { FortuneGradeFX } from './components/FortuneGradeFX';
+import { CookieCrack } from './components/CookieCrack';
+import { QuoteAvatar } from './components/QuoteAvatar';
 
 type AppStep = 'intro' | 'input' | 'result';
 
@@ -471,7 +474,10 @@ const App: React.FC = () => {
                         <button key={item.id} className={`btn-menu fade-up stagger-${i+2}`}
                                 onClick={() => handleMenuSelect(item.id)}>
                           <span className="menu-num">0{item.id}</span>
-                          <span>{item.icon}&nbsp; {item.label}</span>
+                          <span className="menu-main">
+                            <span className={`menu-icon menu-icon-${item.id}`}>{item.icon}</span>
+                            <span className="menu-label">{item.label}</span>
+                          </span>
                           <span className="menu-arrow">›</span>
                         </button>
                     ))}
@@ -519,10 +525,14 @@ const App: React.FC = () => {
 
             {/* RESULT */}
             {step === 'result' && result && (
-                <div className="result-container">
+                <div className={`result-container ${result.type === 'fortune' && gradeConf ? `fortune-${gradeConf.cssClass}` : ''}`}>
                   <span className="result-eyebrow fade-up">DESTINY ANALYSIS</span>
-                  <h2 className="result-title fade-up stagger-1">{result.title}</h2>
-                  <div className="stars-row fade-up stagger-1">✦ · ✦ · ✦</div>
+                  <h2 className={`result-title fade-up stagger-1 ${result.type === 'fortune' && gradeConf ? `result-title-${gradeConf.cssClass}` : ''}`}>{result.title}</h2>
+                  <div className={`stars-row fade-up stagger-1 ${result.type === 'fortune' && gradeConf ? `stars-row-${gradeConf.cssClass}` : ''}`}>
+                    {result.type === 'fortune' && gradeConf
+                      ? <><span className="star-bit">{gradeConf.emoji}</span> <span className="star-bit star-bit-mid">·</span> <span className="star-bit">{gradeConf.emoji}</span> <span className="star-bit star-bit-mid">·</span> <span className="star-bit">{gradeConf.emoji}</span></>
+                      : '✦ · ✦ · ✦'}
+                  </div>
 
                   {result.type === 'saju' ? (
                       <>
@@ -674,6 +684,10 @@ const App: React.FC = () => {
                         })()}
                       </>
                   ) : (
+                      <>
+                        {result.type === 'fortune' && result.grade && (
+                            <FortuneGradeFX grade={result.grade} />
+                        )}
                       <div className={`quote-card fade-up stagger-2 ${gradeConf ? gradeConf.cssClass : ''}`}>
                         {result.grade && gradeConf && (
                             <div className={`grade-badge ${gradeConf.cssClass}`}>
@@ -686,14 +700,21 @@ const App: React.FC = () => {
                             </div>
                         )}
                         {result.dateLabel && <div className="date-label">{result.dateLabel}</div>}
-                        <p className="quote-text">{result.content}</p>
-                        {result.detail && (
+                        {result.type === 'cookie' ? (
+                            <CookieCrack message={result.content} detail={result.detail} />
+                        ) : result.type === 'quote' ? (
+                            <QuoteAvatar author={result.title} text={result.content} />
+                        ) : (
                             <>
-                              <div className="divider"><span className="divider-icon">✦</span></div>
-                              <p className="quote-detail">{result.detail}</p>
+                              <p className="quote-text">{result.content}</p>
+                              {result.detail && (
+                                  <>
+                                    <div className="divider"><span className="divider-icon">✦</span></div>
+                                    <p className="quote-detail">{result.detail}</p>
+                                  </>
+                              )}
                             </>
                         )}
-                        {result.type === 'quote' && <p className="quote-author">— {result.title}</p>}
                         {result.type === 'fortune' && (
                             <div className="daily-refresh-notice">
                               <span className="refresh-icon">↻</span>
@@ -701,6 +722,7 @@ const App: React.FC = () => {
                             </div>
                         )}
                       </div>
+                      </>
                   )}
                 </div>
             )}
